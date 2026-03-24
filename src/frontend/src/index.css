@@ -81,3 +81,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Hide all scrollbars globally */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}

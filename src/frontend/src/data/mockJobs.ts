@@ -46,7 +46,7 @@ export const MOCK_JOBS: MockJob[] = [
     companyColor: "#6366f1",
     companyInitial: "S",
     companyLogo: "/assets/generated/logo-stripe-transparent.dim_120x120.png",
-    companyBanner: "/assets/generated/company-office-banner.dim_800x400.jpg",
+    companyBanner: "/assets/generated/banner-stripe.dim_800x400.jpg",
   },
   {
     id: 2n,
@@ -70,7 +70,7 @@ export const MOCK_JOBS: MockJob[] = [
     companyColor: "#ef4444",
     companyInitial: "A",
     companyLogo: "/assets/generated/logo-airbnb-transparent.dim_120x120.png",
-    companyBanner: "/assets/generated/company-office-banner.dim_800x400.jpg",
+    companyBanner: "/assets/generated/banner-airbnb.dim_800x400.jpg",
   },
   {
     id: 3n,
@@ -94,7 +94,7 @@ export const MOCK_JOBS: MockJob[] = [
     companyColor: "#1f2937",
     companyInitial: "N",
     companyLogo: "/assets/generated/logo-notion-transparent.dim_120x120.png",
-    companyBanner: "/assets/generated/company-office-banner.dim_800x400.jpg",
+    companyBanner: "/assets/generated/banner-notion.dim_800x400.jpg",
   },
   {
     id: 4n,
@@ -123,7 +123,7 @@ export const MOCK_JOBS: MockJob[] = [
     companyColor: "#5c6bc0",
     companyInitial: "L",
     companyLogo: "/assets/generated/logo-linear-transparent.dim_120x120.png",
-    companyBanner: "/assets/generated/company-office-banner.dim_800x400.jpg",
+    companyBanner: "/assets/generated/banner-linear.dim_800x400.jpg",
   },
   {
     id: 5n,
@@ -147,6 +147,6 @@ export const MOCK_JOBS: MockJob[] = [
     companyColor: "#f59e0b",
     companyInitial: "F",
     companyLogo: "/assets/generated/logo-figma-transparent.dim_120x120.png",
-    companyBanner: "/assets/generated/company-office-banner.dim_800x400.jpg",
+    companyBanner: "/assets/generated/banner-figma.dim_800x400.jpg",
   },
 ];

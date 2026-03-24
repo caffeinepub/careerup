@@ -1,3 +1,4 @@
+import { Sparkles } from "lucide-react";
 import { useState } from "react";
 
 const EXTRACTED_SKILLS = [
@@ -19,7 +20,6 @@ const SKILL_COLORS = [
 
 export default function StepConfirmProfile({
   data: _data,
-
   onComplete,
 }: { data: Record<string, unknown>; onComplete: () => void }) {
   const [name, setName] = useState("Alex Johnson");
@@ -71,12 +71,12 @@ export default function StepConfirmProfile({
             className="w-10 h-10 rounded-xl flex items-center justify-center"
             style={{ background: "linear-gradient(135deg, #2563EB, #7C3AED)" }}
           >
-            <span className="text-white text-sm">✨</span>
+            <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
             <p className="font-bold text-gray-900">87% avg match rate</p>
             <p className="text-xs text-gray-500">
-              Based on your skills & preferences
+              Based on your skills &amp; preferences
             </p>
           </div>
         </div>
@@ -104,7 +104,7 @@ export default function StepConfirmProfile({
           className="w-full py-4 rounded-2xl font-semibold text-white text-base shadow-lg active:scale-95 transition-transform"
           style={{ background: "linear-gradient(135deg, #2563EB, #7C3AED)" }}
         >
-          Enter CareerUp ⚡
+          Enter CareerUp
         </button>
       </div>
     </div>

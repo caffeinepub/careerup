@@ -1,3 +1,4 @@
+import { FileText, Upload } from "lucide-react";
 import { useState } from "react";
 
 export default function StepResume({
@@ -28,8 +29,12 @@ export default function StepResume({
               : "border-gray-200 bg-gray-50"
           }`}
         >
-          <div className="w-14 h-14 rounded-2xl bg-white shadow flex items-center justify-center text-2xl">
-            {fileName ? "📄" : "☁️"}
+          <div className="w-14 h-14 rounded-2xl bg-white shadow flex items-center justify-center">
+            {fileName ? (
+              <FileText className="w-7 h-7 text-blue-500" />
+            ) : (
+              <Upload className="w-7 h-7 text-gray-400" />
+            )}
           </div>
           {fileName ? (
             <>

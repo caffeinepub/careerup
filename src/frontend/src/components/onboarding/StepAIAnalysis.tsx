@@ -1,3 +1,4 @@
+import { Brain } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const steps = [
@@ -5,7 +6,7 @@ const steps = [
   "Extracting skills...",
   "Building your profile...",
   "Matching with opportunities...",
-  "Profile complete! 🎉",
+  "Profile complete!",
 ];
 
 export default function StepAIAnalysis({ onDone }: { onDone: () => void }) {
@@ -48,7 +49,7 @@ export default function StepAIAnalysis({ onDone }: { onDone: () => void }) {
             className="w-16 h-16 rounded-full flex items-center justify-center animate-pulse"
             style={{ background: "rgba(255,255,255,0.2)" }}
           >
-            <span className="text-4xl">🧠</span>
+            <Brain className="w-8 h-8 text-white" />
           </div>
         </div>
         {/* Orbiting dot */}

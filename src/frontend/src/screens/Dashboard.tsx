@@ -1,26 +1,26 @@
+import {
+  ClipboardList,
+  Compass,
+  MessageCircle,
+  Search,
+  User,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import ApplicationsScreen from "./ApplicationsScreen";
 import DiscoverScreen from "./DiscoverScreen";
-import MarketInsightsScreen from "./MarketInsightsScreen";
 import MessagesScreen from "./MessagesScreen";
 import ProfileScreen from "./ProfileScreen";
-import SavedScreen from "./SavedScreen";
+import SearchScreen from "./SearchScreen";
 
-type Tab =
-  | "discover"
-  | "applications"
-  | "messages"
-  | "insights"
-  | "saved"
-  | "profile";
+type Tab = "discover" | "search" | "applications" | "messages" | "profile";
 
-const TABS: { id: Tab; icon: string; label: string }[] = [
-  { id: "discover", icon: "🔍", label: "Discover" },
-  { id: "applications", icon: "📋", label: "Applied" },
-  { id: "messages", icon: "💬", label: "Messages" },
-  { id: "insights", icon: "📊", label: "Insights" },
-  { id: "saved", icon: "🔖", label: "Saved" },
-  { id: "profile", icon: "👤", label: "Profile" },
+const TABS: { id: Tab; Icon: LucideIcon; label: string }[] = [
+  { id: "discover", Icon: Compass, label: "Homescreen" },
+  { id: "search", Icon: Search, label: "Search" },
+  { id: "applications", Icon: ClipboardList, label: "My Apps" },
+  { id: "messages", Icon: MessageCircle, label: "Messages" },
+  { id: "profile", Icon: User, label: "Profile" },
 ];
 
 export default function Dashboard() {
@@ -30,10 +30,9 @@ export default function Dashboard() {
     <div className="fixed inset-0 flex flex-col bg-gray-50">
       <div className="flex-1 overflow-hidden">
         {tab === "discover" && <DiscoverScreen />}
+        {tab === "search" && <SearchScreen />}
         {tab === "applications" && <ApplicationsScreen />}
         {tab === "messages" && <MessagesScreen />}
-        {tab === "insights" && <MarketInsightsScreen />}
-        {tab === "saved" && <SavedScreen />}
         {tab === "profile" && <ProfileScreen onUpgradePro={() => {}} />}
       </div>
 
@@ -47,18 +46,25 @@ export default function Dashboard() {
             <button
               type="button"
               key={t.id}
+              data-ocid={`nav.${t.id}.tab`}
               onClick={() => setTab(t.id)}
-              className="flex-1 py-3 flex flex-col items-center gap-0.5 active:scale-95 transition-transform"
+              className="flex-1 py-3 flex flex-col items-center gap-0.5 active:scale-95 transition-transform relative"
             >
-              <span className="text-lg">{t.icon}</span>
+              <t.Icon
+                className={`w-5 h-5 transition-colors ${
+                  tab === t.id ? "text-blue-600" : "text-gray-400"
+                }`}
+              />
               <span
-                className={`text-[9px] font-semibold transition-colors ${tab === t.id ? "text-blue-600" : "text-gray-400"}`}
+                className={`text-[9px] font-semibold transition-colors ${
+                  tab === t.id ? "text-blue-600" : "text-gray-400"
+                }`}
               >
                 {t.label}
               </span>
               {tab === t.id && (
                 <div
-                  className="absolute bottom-0 w-8 h-0.5 rounded-full"
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
                   style={{
                     background: "linear-gradient(90deg, #2563EB, #7C3AED)",
                   }}

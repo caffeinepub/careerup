@@ -1,3 +1,13 @@
+import {
+  Bell,
+  Bookmark,
+  Check,
+  DollarSign,
+  MapPin,
+  Sparkles,
+  Target,
+  Zap,
+} from "lucide-react";
 import { useRef, useState } from "react";
 import JobDetailsSheet from "../components/JobDetailsSheet";
 import { MOCK_JOBS, type MockJob } from "../data/mockJobs";
@@ -5,7 +15,7 @@ import { MOCK_JOBS, type MockJob } from "../data/mockJobs";
 type SwipeAction = "apply" | "save" | "super" | null;
 
 function formatSalary(min: number, max: number) {
-  return `$${Math.round(min / 1000)}K–$${Math.round(max / 1000)}K`;
+  return `$${Math.round(min / 1000)}K\u2013$${Math.round(max / 1000)}K`;
 }
 
 function CompanyLogoImg({
@@ -59,6 +69,34 @@ const SKILL_COLORS = [
   "bg-purple-100 text-purple-700",
   "bg-green-100 text-green-700",
   "bg-orange-100 text-orange-700",
+];
+
+const MOCK_NOTIFICATIONS = [
+  {
+    id: 1,
+    text: "New match: Staff Engineer at Linear \u2014 88% match",
+    time: "2 min ago",
+  },
+  {
+    id: 2,
+    text: "Your application to Stripe was viewed by a recruiter",
+    time: "1 hr ago",
+  },
+  {
+    id: 3,
+    text: "You have a new message from Airbnb HR",
+    time: "3 hrs ago",
+  },
+  {
+    id: 4,
+    text: "Interview reminder: Notion UX Lead \u2014 Tomorrow 2PM",
+    time: "Yesterday",
+  },
+  {
+    id: 5,
+    text: "3 new jobs match your profile today",
+    time: "Yesterday",
+  },
 ];
 
 function JobCard({
@@ -128,17 +166,23 @@ function JobCard({
       {/* Swipe Labels */}
       {isTop && swipeAction === "apply" && (
         <div className="absolute top-8 left-6 z-20 px-4 py-2 rounded-xl border-2 border-green-500 rotate-[-12deg]">
-          <span className="text-green-500 font-black text-xl">APPLY ✓</span>
+          <span className="text-green-500 font-black text-xl flex items-center gap-1">
+            APPLY <Check size={16} className="inline" />
+          </span>
         </div>
       )}
       {isTop && swipeAction === "save" && (
         <div className="absolute top-8 right-6 z-20 px-4 py-2 rounded-xl border-2 border-yellow-500 rotate-[12deg]">
-          <span className="text-yellow-500 font-black text-xl">SAVE ★</span>
+          <span className="text-yellow-500 font-black text-xl flex items-center gap-1">
+            SAVE <Bookmark size={16} className="inline" />
+          </span>
         </div>
       )}
       {isTop && swipeAction === "super" && (
         <div className="absolute top-8 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-xl border-2 border-blue-500">
-          <span className="text-blue-500 font-black text-xl">SUPER ⚡</span>
+          <span className="text-blue-500 font-black text-xl flex items-center gap-1">
+            SUPER <Zap size={18} className="inline" />
+          </span>
         </div>
       )}
 
@@ -150,7 +194,6 @@ function JobCard({
           className="w-full h-full object-cover"
           style={{ borderRadius: "24px 24px 0 0" }}
         />
-        {/* Dark gradient overlay */}
         <div
           className="absolute inset-0"
           style={{
@@ -159,11 +202,9 @@ function JobCard({
             borderRadius: "24px 24px 0 0",
           }}
         />
-        {/* Match badge top-right */}
         <div className="absolute top-3 right-3 z-10">
           <MatchBadge score={job.matchScore} />
         </div>
-        {/* Company logo overlapping bottom of banner */}
         <div className="absolute -bottom-6 left-5 z-10">
           <CompanyLogoImg
             logo={job.companyLogo}
@@ -176,21 +217,29 @@ function JobCard({
 
       {/* Card Content */}
       <div className="flex flex-col px-5 pt-9 pb-4">
-        {/* Job info */}
-        <div className="mb-3">
+        <div className="mb-2">
           <h2 className="text-xl font-bold text-gray-900 leading-tight mb-0.5">
             {job.title}
           </h2>
           <p className="text-gray-600 font-medium text-sm">{job.company}</p>
-          <div className="flex items-center gap-3 mt-1.5">
-            <span className="text-gray-400 text-xs">📍 {job.location}</span>
-            <span className="text-gray-400 text-xs">
-              💰 {formatSalary(job.salaryMin, job.salaryMax)}
+          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+            <span className="text-gray-400 text-xs flex items-center gap-0.5">
+              <MapPin size={12} className="inline mr-0.5" />
+              {job.location}
+            </span>
+            <span className="text-gray-400 text-xs flex items-center gap-0.5">
+              <DollarSign size={12} className="inline mr-0.5" />
+              {formatSalary(job.salaryMin, job.salaryMax)}
+            </span>
+            <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs font-semibold rounded-full">
+              {job.employmentType}
             </span>
           </div>
+          <p className="text-gray-500 text-xs mt-1.5 line-clamp-2 leading-relaxed">
+            {job.description}
+          </p>
         </div>
 
-        {/* Skills */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {job.skills.map((s, i) => (
             <span
@@ -202,21 +251,16 @@ function JobCard({
           ))}
         </div>
 
-        {/* AI reason */}
         <div
           className="flex items-center gap-2 p-3 rounded-2xl"
           style={{ background: "linear-gradient(135deg, #eff6ff, #f5f3ff)" }}
         >
-          <span className="text-base">✨</span>
+          <Sparkles size={14} className="text-purple-400 shrink-0" />
           <p className="text-xs text-gray-600 italic">{job.aiReason}</p>
         </div>
 
-        {/* Employment type */}
-        <div className="flex items-center justify-between mt-3">
-          <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full">
-            {job.employmentType}
-          </span>
-          <span className="text-xs text-gray-400">Tap for details →</span>
+        <div className="mt-2 text-right">
+          <span className="text-xs text-gray-400">Tap for details \u2192</span>
         </div>
       </div>
     </div>
@@ -230,7 +274,7 @@ export default function DiscoverScreen() {
   const [dragY, setDragY] = useState(0);
   const [swipeAction, setSwipeAction] = useState<SwipeAction>(null);
   const [selectedJob, setSelectedJob] = useState<MockJob | null>(null);
-  const [lastRemoved, setLastRemoved] = useState<MockJob | null>(null);
+  const [showNotifications, setShowNotifications] = useState(false);
   const startX = useRef(0);
   const startY = useRef(0);
   const startTime = useRef(0);
@@ -280,7 +324,6 @@ export default function DiscoverScreen() {
   function triggerSwipe(dir: string, _action: SwipeAction) {
     setFlying(dir);
     setTimeout(() => {
-      setLastRemoved(jobs[0]);
       setJobs((prev) => prev.slice(1));
       setFlying(null);
       setDragX(0);
@@ -289,50 +332,40 @@ export default function DiscoverScreen() {
     }, 400);
   }
 
-  function handleUndo() {
-    if (lastRemoved) {
-      setJobs((prev) => [lastRemoved!, ...prev]);
-      setLastRemoved(null);
-    }
-  }
-
   return (
     <div className="flex flex-col h-full">
       {/* Top Bar */}
       <div className="flex items-center justify-between px-5 pt-14 pb-3 bg-white">
         <div className="flex items-center gap-2">
-          <span className="text-xl">⚡</span>
           <span className="font-bold text-gray-900 text-lg">CareerUp</span>
         </div>
-        <div className="px-3 py-1.5 rounded-full bg-gray-100 flex items-center gap-1">
-          <span className="text-sm">📍</span>
-          <span className="text-sm font-medium text-gray-700">
-            San Francisco
+        <button
+          type="button"
+          data-ocid="discover.notification.button"
+          onClick={() => setShowNotifications(true)}
+          className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center relative"
+        >
+          <Bell size={18} />
+          <span
+            className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-white flex items-center justify-center"
+            style={{
+              background: "linear-gradient(135deg, #2563EB, #7C3AED)",
+              fontSize: "9px",
+              fontWeight: 700,
+            }}
+          >
+            5
           </span>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-sm"
-          >
-            🔔
-          </button>
-          <button
-            type="button"
-            className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-sm"
-          >
-            ⚙️
-          </button>
-        </div>
+        </button>
       </div>
 
       {/* Card Stack */}
       <div className="flex-1 relative mx-0 my-2">
         {jobs.length === 0 ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center px-8">
-            <span className="text-6xl mb-4">🎯</span>
+            <Target size={56} className="text-gray-300 mb-4" />
             <h3 className="text-xl font-bold text-gray-900 mb-2">
-              You're all caught up!
+              You&#39;re all caught up!
             </h3>
             <p className="text-gray-500 text-center text-sm mb-6">
               No more matches for today. Check back tomorrow or update your
@@ -374,36 +407,30 @@ export default function DiscoverScreen() {
       {/* Action Buttons */}
       {jobs.length > 0 && (
         <div className="flex items-center justify-center gap-5 pb-4 pt-2">
-          {lastRemoved && (
-            <button
-              type="button"
-              onClick={handleUndo}
-              className="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-400 border border-gray-100 text-sm"
-            >
-              ↩️
-            </button>
-          )}
           <button
             type="button"
+            data-ocid="discover.save.button"
             onClick={() => triggerSwipe("left", "save")}
-            className="w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center text-2xl border border-gray-100 active:scale-90 transition-transform"
+            className="w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center border border-gray-100 active:scale-90 transition-transform"
           >
-            🔖
+            <Bookmark size={22} className="text-yellow-500" />
           </button>
           <button
             type="button"
+            data-ocid="discover.super_apply.button"
             onClick={() => triggerSwipe("up", "super")}
-            className="w-16 h-16 rounded-full flex items-center justify-center text-2xl shadow-xl active:scale-90 transition-transform"
+            className="w-16 h-16 rounded-full flex items-center justify-center shadow-xl active:scale-90 transition-transform"
             style={{ background: "linear-gradient(135deg, #2563EB, #7C3AED)" }}
           >
-            ⚡
+            <Zap size={26} className="text-white" />
           </button>
           <button
             type="button"
+            data-ocid="discover.apply.button"
             onClick={() => triggerSwipe("right", "apply")}
-            className="w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center text-2xl border border-gray-100 active:scale-90 transition-transform"
+            className="w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center border border-gray-100 active:scale-90 transition-transform"
           >
-            ✅
+            <Check size={22} className="text-green-500" />
           </button>
         </div>
       )}
@@ -414,6 +441,56 @@ export default function DiscoverScreen() {
           job={selectedJob}
           onClose={() => setSelectedJob(null)}
         />
+      )}
+
+      {/* Notifications Overlay */}
+      {showNotifications && (
+        <div
+          className="absolute inset-0 z-50"
+          style={{ background: "rgba(0,0,0,0.4)" }}
+        >
+          {/* Backdrop */}
+          <button
+            type="button"
+            aria-label="Close notifications"
+            className="absolute inset-0 w-full h-full cursor-default"
+            onClick={() => setShowNotifications(false)}
+          />
+          {/* Panel */}
+          <div
+            role="presentation"
+            className="absolute top-0 left-0 right-0 bg-white rounded-b-3xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 pt-14 pb-4 border-b border-gray-100">
+              <h2 className="text-xl font-bold text-gray-900">Notifications</h2>
+              <button
+                type="button"
+                data-ocid="notifications.close.button"
+                onClick={() => setShowNotifications(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-semibold text-sm"
+              >
+                \u2715
+              </button>
+            </div>
+            <div className="px-5 py-2 pb-8">
+              {MOCK_NOTIFICATIONS.map((n, i) => (
+                <div
+                  key={n.id}
+                  className={`py-3.5 ${
+                    i < MOCK_NOTIFICATIONS.length - 1
+                      ? "border-b border-gray-50"
+                      : ""
+                  }`}
+                >
+                  <p className="text-sm text-gray-800 leading-snug">{n.text}</p>
+                  <p className="text-xs text-gray-400 mt-1">{n.time}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

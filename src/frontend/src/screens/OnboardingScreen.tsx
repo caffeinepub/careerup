@@ -1,3 +1,4 @@
+import { Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import StepAIAnalysis from "../components/onboarding/StepAIAnalysis";
 import StepConfirmProfile from "../components/onboarding/StepConfirmProfile";
@@ -52,10 +53,10 @@ function VideoIntroStep({ onNext }: { onNext: () => void }) {
       {/* Centered content */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 text-center">
         <div
-          className="w-20 h-20 rounded-3xl flex items-center justify-center text-4xl mb-6 shadow-2xl"
+          className="w-20 h-20 rounded-3xl flex items-center justify-center mb-6 shadow-2xl"
           style={{ background: "linear-gradient(135deg, #2563EB, #7C3AED)" }}
         >
-          ⚡
+          <Zap className="w-10 h-10 text-white" />
         </div>
         <h1 className="text-4xl font-black text-white mb-3 leading-tight">
           CareerUp
@@ -76,7 +77,7 @@ function VideoIntroStep({ onNext }: { onNext: () => void }) {
           className="w-full py-4 rounded-2xl text-white font-bold text-lg shadow-2xl active:scale-95 transition-transform"
           style={{ background: "linear-gradient(135deg, #2563EB, #7C3AED)" }}
         >
-          Get Started →
+          Get Started
         </button>
       </div>
     </div>

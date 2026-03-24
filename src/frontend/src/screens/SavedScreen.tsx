@@ -1,3 +1,4 @@
+import { Bookmark } from "lucide-react";
 import { useState } from "react";
 import JobDetailsSheet from "../components/JobDetailsSheet";
 import { MOCK_JOBS } from "../data/mockJobs";
@@ -21,7 +22,7 @@ export default function SavedScreen() {
       <div className="flex-1 overflow-y-auto px-5">
         {saved.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64">
-            <span className="text-4xl mb-3">🔖</span>
+            <Bookmark className="w-10 h-10 text-gray-300 mb-3" />
             <p className="text-gray-500 text-sm">
               No saved jobs yet. Swipe left to save!
             </p>

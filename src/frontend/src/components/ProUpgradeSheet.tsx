@@ -1,12 +1,23 @@
+import {
+  BarChart2,
+  Crown,
+  Eye,
+  Mail,
+  Rocket,
+  ShieldOff,
+  X,
+  Zap,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 
-const FEATURES = [
-  "⚡ Unlimited Super Applies",
-  "👁️ See who viewed your profile",
-  "📊 Advanced AI market insights",
-  "🚀 Priority matching algorithm",
-  "🚫 Ad-free experience",
-  "✉️ Direct recruiter messaging",
+const FEATURES: { Icon: LucideIcon; text: string }[] = [
+  { Icon: Zap, text: "Unlimited Super Applies" },
+  { Icon: Eye, text: "See who viewed your profile" },
+  { Icon: BarChart2, text: "Advanced AI market insights" },
+  { Icon: Rocket, text: "Priority matching algorithm" },
+  { Icon: ShieldOff, text: "Ad-free experience" },
+  { Icon: Mail, text: "Direct recruiter messaging" },
 ];
 
 export default function ProUpgradeSheet({ onClose }: { onClose: () => void }) {
@@ -44,14 +55,14 @@ export default function ProUpgradeSheet({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-sm"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
           <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/10" />
           <div className="relative">
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-3xl">👑</span>
+              <Crown className="w-8 h-8 text-white" />
               <div>
                 <h2 className="text-white font-bold text-xl">CareerUp Pro</h2>
                 <p className="text-white/70 text-sm">
@@ -65,13 +76,9 @@ export default function ProUpgradeSheet({ onClose }: { onClose: () => void }) {
         {/* Features */}
         <div className="px-6 pt-5 pb-4">
           {FEATURES.map((f) => (
-            <div key={f} className="flex items-center gap-3 py-2.5">
-              <span className="text-base w-6 text-center">
-                {f.split(" ")[0]}
-              </span>
-              <p className="text-sm font-medium text-gray-800">
-                {f.split(" ").slice(1).join(" ")}
-              </p>
+            <div key={f.text} className="flex items-center gap-3 py-2.5">
+              <f.Icon className="w-5 h-5 text-blue-500 shrink-0" />
+              <p className="text-sm font-medium text-gray-800">{f.text}</p>
             </div>
           ))}
         </div>
@@ -112,7 +119,7 @@ export default function ProUpgradeSheet({ onClose }: { onClose: () => void }) {
             className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-xl active:scale-95 transition-all disabled:opacity-70"
             style={{ background: "linear-gradient(135deg, #2563EB, #7C3AED)" }}
           >
-            {loading ? "⏳ Processing..." : "Start 7-Day Free Trial"}
+            {loading ? "Processing..." : "Start 7-Day Free Trial"}
           </button>
           <p className="text-center text-xs text-gray-400 mt-3">
             Cancel anytime. No credit card required for trial.

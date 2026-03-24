@@ -1,3 +1,4 @@
+import { Zap } from "lucide-react";
 import { useState } from "react";
 
 export default function WelcomeScreen({
@@ -42,7 +43,7 @@ export default function WelcomeScreen({
         {/* Logo */}
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <span className="text-lg">⚡</span>
+            <Zap className="w-5 h-5 text-white" />
           </div>
           <span className="text-white font-bold text-xl">CareerUp</span>
         </div>
@@ -84,7 +85,7 @@ export default function WelcomeScreen({
         </div>
 
         <p className="text-white/40 text-xs text-center mt-4">
-          By continuing, you agree to our Terms & Privacy Policy
+          By continuing, you agree to our Terms &amp; Privacy Policy
         </p>
       </div>
     </div>

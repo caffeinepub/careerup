@@ -1,3 +1,4 @@
+import { Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function SplashScreen({ onDone }: { onDone: () => void }) {
@@ -24,7 +25,7 @@ export default function SplashScreen({ onDone }: { onDone: () => void }) {
         }}
       >
         <div className="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-2xl">
-          <span className="text-4xl">⚡</span>
+          <Zap className="w-10 h-10 text-white" />
         </div>
         <div className="text-center">
           <h1 className="text-3xl font-bold text-white tracking-tight">

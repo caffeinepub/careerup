@@ -1,3 +1,12 @@
+import {
+  Bookmark,
+  BookmarkCheck,
+  Building2,
+  Check,
+  DollarSign,
+  MapPin,
+  X,
+} from "lucide-react";
 import { useRef, useState } from "react";
 import type { MockJob } from "../data/mockJobs";
 
@@ -106,9 +115,9 @@ export default function JobDetailsSheet({
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-sm"
+              className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500"
             >
-              ✕
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -128,8 +137,9 @@ export default function JobDetailsSheet({
           {/* Company info section */}
           <div className="px-6 mb-4">
             <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100">
-              <p className="text-sm font-bold text-gray-800 mb-1">
-                🏢 {job.company}
+              <p className="text-sm font-bold text-gray-800 mb-1 flex items-center gap-1.5">
+                <Building2 className="w-4 h-4 text-gray-500" />
+                {job.company}
               </p>
               <p className="text-xs text-gray-500 mb-2">
                 Tech-forward company building the future
@@ -162,11 +172,12 @@ export default function JobDetailsSheet({
 
             {/* Meta pills */}
             <div className="flex flex-wrap gap-2 mb-4">
-              <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full">
-                📍 {job.location}
+              <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full flex items-center gap-1">
+                <MapPin className="w-3 h-3" /> {job.location}
               </span>
-              <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full">
-                💰 {formatSalary(job.salaryMin, job.salaryMax)}
+              <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full flex items-center gap-1">
+                <DollarSign className="w-3 h-3" />{" "}
+                {formatSalary(job.salaryMin, job.salaryMax)}
               </span>
             </div>
 
@@ -178,7 +189,7 @@ export default function JobDetailsSheet({
               }}
             >
               <p className="text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
-                ✨ Why You Match
+                Why You Match
               </p>
               <p className="text-sm text-gray-700">
                 {job.aiReason}. Your background closely aligns with what{" "}
@@ -227,15 +238,15 @@ export default function JobDetailsSheet({
             {/* Perks */}
             <div className="mb-4">
               <p className="text-sm font-bold text-gray-900 mb-2">
-                Perks & Benefits
+                Perks &amp; Benefits
               </p>
               <div className="flex flex-wrap gap-2">
                 {job.perks.map((p) => (
                   <span
                     key={p}
-                    className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full"
+                    className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full flex items-center gap-1"
                   >
-                    ✓ {p}
+                    <Check className="w-3 h-3" /> {p}
                   </span>
                 ))}
               </div>
@@ -248,9 +259,21 @@ export default function JobDetailsSheet({
           <button
             type="button"
             onClick={() => setSaved(!saved)}
-            className={`flex-1 py-3.5 rounded-2xl font-semibold text-sm border transition-all ${saved ? "bg-blue-50 border-blue-200 text-blue-600" : "bg-white border-gray-200 text-gray-700"}`}
+            className={`flex-1 py-3.5 rounded-2xl font-semibold text-sm border transition-all flex items-center justify-center gap-1.5 ${
+              saved
+                ? "bg-blue-50 border-blue-200 text-blue-600"
+                : "bg-white border-gray-200 text-gray-700"
+            }`}
           >
-            {saved ? "★ Saved" : "☆ Save Job"}
+            {saved ? (
+              <>
+                <BookmarkCheck className="w-4 h-4" /> Saved
+              </>
+            ) : (
+              <>
+                <Bookmark className="w-4 h-4" /> Save Job
+              </>
+            )}
           </button>
           <button
             type="button"
@@ -263,7 +286,7 @@ export default function JobDetailsSheet({
                 : "linear-gradient(135deg, #2563EB, #7C3AED)",
             }}
           >
-            {applied ? "✓ Applied!" : "Apply Now"}
+            {applied ? "Applied!" : "Apply Now"}
           </button>
         </div>
       </div>
