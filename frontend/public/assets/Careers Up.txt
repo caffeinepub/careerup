@@ -1,0 +1,1382 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  Home, Search, Briefcase, MessageSquare, User, ChevronLeft, Sparkles, 
+  MapPin, CheckCircle, X, ArrowUpRight, FileText, Check, Star, 
+  Activity, Bell, LogOut, Bookmark, TrendingUp, Heart, X as XIcon, 
+  Info, SlidersHorizontal, ChevronRight, ChevronDown, CheckSquare, Zap, Clock, Send,
+  Eye, MousePointerClick, Settings, CreditCard, Trash2, UploadCloud, Shield, HelpCircle
+} from 'lucide-react';
+
+// --- GLOBAL STYLES ---
+const GlobalStyles = () => (
+  <style dangerouslySetInnerHTML={{__html: `
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .touch-none { touch-action: none; }
+    .prevent-select { -webkit-user-select: none; user-select: none; }
+    
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-slide-up {
+      animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+      animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes pulse-fast {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .animate-pulse-fast {
+      animation: pulse-fast 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  `}} />
+);
+
+// --- MOCK DATA ---
+const initialUser = {
+  name: "Arjun Mehta",
+  role: "Senior Product Designer",
+  email: "arjun.mehta@example.com",
+  avatar: "AM",
+  isPro: false,
+  location: "Bengaluru, India",
+  strength: 82
+};
+
+const baseJobs = [
+  { 
+    id: 1, title: "Product Designer", company: "CRED", location: "Bengaluru", area: "Indiranagar", type: "Hybrid", 
+    match: 98, companySize: "201–1000 employees",
+    imageUrl: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=800&q=80",
+    companyLogo: "https://logo.clearbit.com/cred.club",
+    salary: "₹25–40 LPA", tags: ["Design Systems", "Figma", "Prototyping", "UX"],
+    fitReason: "Matches your React, UI/UX and Product scaling skills perfectly.",
+    description: "CRED is looking for a Product Designer to elevate our financial products. You will own end-to-end design for new credit features.",
+    responsibilities: ["Lead design for new financial features", "Evolve the Neo-pop design system", "Collaborate with frontend engineers"],
+    perks: ["Unlimited leaves", "Premium health insurance", "Learning budget"],
+    theme: { bg: "bg-gradient-to-br from-stone-200 via-gray-100 to-zinc-200", bannerOverlay: "from-stone-200", text: "text-zinc-800" }
+  },
+  { 
+    id: 2, title: "Senior Frontend Engineer", company: "Razorpay", location: "Bengaluru", area: "Koramangala", type: "On-site", 
+    match: 92, companySize: "1000+ employees",
+    imageUrl: "https://images.unsplash.com/photo-1492724441997-5dc865305da7?auto=format&fit=crop&w=800&q=80",
+    companyLogo: "https://logo.clearbit.com/razorpay.com",
+    salary: "₹35–55 LPA", tags: ["React", "TypeScript", "Performance"],
+    fitReason: "Strong overlap with your frontend skills and preference for high-scale fintech.",
+    description: "Join Razorpay's core checkout team. You will be building highly optimized interfaces processing millions of transactions.",
+    responsibilities: ["Build scalable React architectures", "Optimize checkout load times", "Mentor junior engineers"],
+    perks: ["Remote-friendly weeks", "Stock options", "Catered meals"],
+    theme: { bg: "bg-gradient-to-br from-blue-100 via-sky-50 to-indigo-100", bannerOverlay: "from-blue-100", text: "text-blue-700" }
+  },
+  { 
+    id: 3, title: "AI Research Engineer", company: "Ola Krutrim", location: "Bengaluru", area: "Bellandur", type: "On-site", 
+    match: 88, companySize: "201–1000 employees",
+    imageUrl: "https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=800&q=80",
+    companyLogo: "https://logo.clearbit.com/olaelectric.com",
+    salary: "₹50+ LPA", tags: ["Python", "LLMs", "PyTorch", "AI"],
+    fitReason: "Matches your recent upskilling in LLMs, though requires more backend experience.",
+    description: "Help build India's foundational AI models. We are looking for engineers passionate about training large-scale language models.",
+    responsibilities: ["Train foundational LLMs", "Optimize GPU utilization", "Implement efficient inference pipelines"],
+    perks: ["Cutting-edge hardware access", "Relocation assistance", "Conference sponsorships"],
+    theme: { bg: "bg-gradient-to-br from-emerald-100 via-teal-50 to-emerald-100", bannerOverlay: "from-emerald-100", text: "text-emerald-700" }
+  },
+  { 
+    id: 4, title: "Growth Marketing Lead", company: "Zomato", location: "Gurgaon", area: "Cyber Hub", type: "Hybrid", 
+    match: 75, companySize: "1000+ employees",
+    imageUrl: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80",
+    companyLogo: "https://logo.clearbit.com/zomato.com",
+    salary: "₹30–50 LPA", tags: ["Growth", "Analytics", "Brand"],
+    fitReason: "Alternative career path based on your strong product analytics background.",
+    description: "Drive user acquisition and retention for Zomato's new dining-out features at the intersection of product and marketing.",
+    responsibilities: ["Design viral growth loops", "Manage performance marketing budgets", "Analyze funnel drop-offs"],
+    perks: ["Free Zomato Pro", "Flexible working hours", "Pet-friendly office"],
+    theme: { bg: "bg-gradient-to-br from-rose-100 via-red-50 to-pink-100", bannerOverlay: "from-rose-100", text: "text-red-600" }
+  },
+  { 
+    id: 5, title: "Staff Product Manager", company: "Flipkart", location: "Bengaluru", area: "ORR", type: "Full-time", 
+    match: 95, companySize: "1000+ employees",
+    imageUrl: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80",
+    companyLogo: "https://logo.clearbit.com/flipkart.com",
+    salary: "₹50+ LPA", tags: ["Strategy", "E-commerce", "Leadership"],
+    fitReason: "Perfect match for your transition goals into product leadership within e-commerce.",
+    description: "Lead the product vision for Flipkart's next-gen loyalty program impacting millions.",
+    responsibilities: ["Define multi-year strategy", "Drive cross-functional execution", "Present to executive leadership"],
+    perks: ["ESOPs", "Comprehensive family insurance", "Sabbatical policy"],
+    theme: { bg: "bg-gradient-to-br from-blue-100 via-yellow-50 to-sky-100", bannerOverlay: "from-blue-100", text: "text-blue-800" }
+  },
+  { 
+    id: 6, title: "UX Researcher", company: "Swiggy", location: "Remote", area: "Anywhere", type: "Remote", 
+    match: 94, companySize: "1000+ employees",
+    imageUrl: "https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=800&q=80",
+    companyLogo: "https://logo.clearbit.com/swiggy.com",
+    salary: "₹20–30 LPA", tags: ["User Testing", "Interviews", "Data Analysis"],
+    fitReason: "Your portfolio highlights strong user testing methodologies fitting this role.",
+    description: "Join our core research team to uncover insights that shape the future of convenience in India.",
+    responsibilities: ["Conduct primary user research", "Synthesize findings for product teams", "Build usability testing frameworks"],
+    perks: ["Remote first", "Wellness allowance", "Free delivery"],
+    theme: { bg: "bg-gradient-to-br from-orange-100 via-amber-50 to-orange-100", bannerOverlay: "from-orange-100", text: "text-orange-600" }
+  }
+];
+
+const mockPastApplications = [
+  {
+    id: 104, title: "Product Manager", company: "Flipkart", logo: "https://logo.clearbit.com/flipkart.com",
+    status: "Rejected", appliedAt: "Applied on Feb 12", updatedAt: "Closed on Mar 5", isActive: false
+  },
+  {
+    id: 105, title: "Growth Lead", company: "Zomato", logo: "https://logo.clearbit.com/zomato.com",
+    status: "Withdrawn", appliedAt: "Applied on Jan 20", updatedAt: "Withdrawn on Feb 1", isActive: false
+  }
+];
+
+const mockInitialChats = [
+  {
+    id: 1, recruiterName: "Priya Sharma", company: "Razorpay", role: "Razorpay Hiring", avatar: "PS",
+    time: "2m ago", unreadCount: 2,
+    messages: [
+      { id: 1, text: "Hi Arjun, thanks for your interest in the Senior Product Designer role at Razorpay.", sender: 'recruiter', time: "10:00 AM" },
+      { id: 2, text: "Your profile and portfolio look exceptionally strong.", sender: 'recruiter', time: "10:01 AM" },
+      { id: 3, text: "Can we schedule your first round this week? I have slots on Wed or Thu.", sender: 'recruiter', time: "10:02 AM" }
+    ]
+  },
+  {
+    id: 2, recruiterName: "Aman Verma", company: "CRED", role: "CRED Talent Team", avatar: "AV",
+    time: "1h ago", unreadCount: 1,
+    messages: [
+      { id: 1, text: "Hello Arjun, Aman here from CRED.", sender: 'recruiter', time: "Yesterday" },
+      { id: 2, text: "Hi Aman, great to connect!", sender: 'user', time: "Yesterday" },
+      { id: 3, text: "Are you available for a quick 15-min discovery call?", sender: 'recruiter', time: "1h ago" }
+    ]
+  }
+];
+
+const FILTER_OPTIONS = {
+  jobType: ["Full-time", "Part-time", "Contract", "Internship", "Remote", "Hybrid", "On-site"],
+  location: ["Bangalore", "Bengaluru", "Mumbai", "Delhi NCR", "Hyderabad", "Pune", "Chennai", "Remote"],
+  salary: ["₹6–10 LPA", "₹10–20 LPA", "₹20–30 LPA", "₹30–50 LPA", "₹50+ LPA"],
+  size: ["1–10", "11–50", "51–200", "201–1000", "1000+"]
+};
+
+const FILTER_LABELS = { jobType: "Job Type", location: "Location", salary: "Salary Range", size: "Company Size" };
+
+
+// --- REUSABLE UI PRIMITIVES ---
+
+const TopBar = ({ title, subtitle, onBack, rightIcon, onClickRight, showBranding }) => (
+  <div className="flex items-center justify-between px-6 pt-12 pb-4 bg-white/70 backdrop-blur-2xl sticky top-0 z-40 border-b border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+    {onBack ? (
+      <button onClick={onBack} className="p-2 -ml-2 text-slate-500 hover:text-blue-600 transition bg-white/50 shadow-sm rounded-full border border-white relative z-10 shrink-0">
+        <ChevronLeft size={24} />
+      </button>
+    ) : showBranding ? (
+      <div className="flex items-center gap-2.5 relative z-10 shrink-0">
+        <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-sky-400 rounded-xl flex items-center justify-center shadow-md">
+          <Sparkles size={16} className="text-white" />
+        </div>
+        <span className="font-black text-slate-800 text-[19px] tracking-tight">CareerUp</span>
+      </div>
+    ) : (
+      <div className="w-10 relative z-10 shrink-0" />
+    )}
+    
+    {title && !showBranding && (
+      <div className="absolute left-0 right-0 flex flex-col items-center justify-center pointer-events-none px-14">
+        <h1 className="text-[17px] font-black text-slate-800 tracking-wide text-center truncate w-full">{title}</h1>
+        {subtitle && <p className="text-[11px] font-semibold text-slate-500 mt-0.5 text-center truncate w-full">{subtitle}</p>}
+      </div>
+    )}
+    
+    {rightIcon ? (
+      <button onClick={onClickRight} className="p-2 -mr-2 text-slate-500 hover:text-blue-600 transition bg-white/50 shadow-sm rounded-full border border-white relative z-10 shrink-0">
+        {rightIcon}
+      </button>
+    ) : <div className="w-10 relative z-10 shrink-0" />}
+  </div>
+);
+
+const PrimaryButton = ({ label, onClick, className = "", variant = "primary", icon, disabled = false }) => {
+  const base = "flex justify-center items-center gap-2 w-full py-4 rounded-2xl font-bold text-[15px] transition-all";
+  const activeState = disabled ? "opacity-60 cursor-not-allowed" : "active:scale-[0.98]";
+  const variants = {
+    primary: "bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-[0_8px_20px_rgba(59,130,246,0.3)] hover:shadow-[0_8px_25px_rgba(59,130,246,0.4)] border border-blue-400/20",
+    secondary: "bg-white/80 backdrop-blur-md text-blue-600 hover:bg-white border border-white/60 shadow-sm",
+    outline: "bg-white/40 backdrop-blur-md border border-blue-200 text-blue-600 hover:bg-blue-50/50 shadow-sm",
+    danger: "bg-red-50 text-red-500 hover:bg-red-100 border border-red-100 shadow-sm"
+  };
+  return (
+    <button onClick={onClick} disabled={disabled} className={`${base} ${variants[variant]} ${activeState} ${className}`}>
+      {icon} {label}
+    </button>
+  );
+};
+
+const GlassInput = ({ label, defaultValue, type = "text" }) => (
+  <div className="relative mb-5 group">
+    <label className="text-[10px] font-black text-blue-600 uppercase tracking-wider absolute -top-2.5 left-3 bg-white px-2 z-10 rounded-full shadow-sm border border-slate-100">{label}</label>
+    <input 
+      type={type} 
+      defaultValue={defaultValue} 
+      className="w-full bg-white/60 backdrop-blur-xl border-2 border-white shadow-inner rounded-2xl px-4 py-3.5 text-[15px] font-bold text-slate-800 outline-none focus:border-blue-400 focus:bg-white focus:shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all relative z-0" 
+    />
+  </div>
+);
+
+const MatchBadgeOverlay = ({ score }) => (
+  <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white px-3 py-1.5 rounded-xl text-[12px] font-black uppercase tracking-wider shadow-lg border border-white/30">
+    <Sparkles size={14} className="text-sky-300" /> 
+    <span className="font-mono">{score}% Match</span>
+  </div>
+);
+
+const MatchBadge = ({ score }) => (
+  <div className="flex items-center gap-1.5 bg-sky-50 text-blue-600 px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider border border-sky-100 shadow-sm">
+    <Sparkles size={12} className="text-blue-500" /> 
+    <span className="font-mono">{score}%</span>
+  </div>
+);
+
+const StatusBadge = ({ status }) => {
+  let style = "bg-slate-100 text-slate-600 border-slate-200";
+  if (status === "Screening") style = "bg-sky-50 text-sky-600 border-sky-100";
+  if (status === "Interview") style = "bg-blue-50 text-blue-600 border-blue-100";
+  if (status === "Final Round") style = "bg-indigo-50 text-indigo-600 border-indigo-100";
+  if (status === "Applied") style = "bg-emerald-50 text-emerald-600 border-emerald-100";
+  if (status === "Rejected") style = "bg-red-50 text-red-500 border-red-100";
+  if (status === "Withdrawn") style = "bg-slate-100 text-slate-500 border-slate-200";
+  return <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border shadow-sm ${style}`}>{status}</span>;
+};
+
+const ProgressTracker = ({ stageIndex, stages }) => {
+  const percent = (stageIndex / (stages.length - 1)) * 100;
+  
+  return (
+    <div className="mt-5 mb-1 w-full">
+      <div className="relative w-full h-1.5 bg-slate-200 rounded-full shadow-inner">
+        <div 
+          className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-sky-400 rounded-full transition-all duration-500 shadow-sm"
+          style={{ width: `${percent}%` }}
+        />
+        {stages.map((_, idx) => (
+          <div 
+            key={idx} 
+            className={`absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm transition-colors duration-500 ${idx <= stageIndex ? 'bg-blue-500' : 'bg-slate-300'}`}
+            style={{ left: `calc(${(idx / (stages.length - 1)) * 100}% - 5px)` }}
+          />
+        ))}
+      </div>
+      <div className="flex justify-between mt-3 px-1">
+        {stages.map((stage, idx) => (
+          <span 
+            key={stage} 
+            className={`text-[9px] font-bold uppercase tracking-wider ${idx <= stageIndex ? 'text-blue-600' : 'text-slate-400'}`}
+            style={{ textAlign: idx === 0 ? 'left' : idx === stages.length - 1 ? 'right' : 'center', width: '33%' }}
+          >
+            {stage}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
+// --- ONBOARDING SCREENS ---
+
+const SplashScreen = ({ nav }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => nav('welcome'), 2000);
+    return () => clearTimeout(timer);
+  }, [nav]);
+
+  return (
+    <div className="flex-1 bg-gradient-to-br from-blue-600 to-sky-400 flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-full bg-white/5 backdrop-blur-[100px] pointer-events-none" />
+      <div className="w-24 h-24 bg-white/20 backdrop-blur-xl rounded-[2rem] border border-white/40 flex items-center justify-center shadow-2xl animate-pop relative z-10">
+        <Sparkles size={48} className="text-white" />
+      </div>
+      <h1 className="absolute bottom-16 text-white font-black tracking-widest uppercase text-sm animate-pulse-fast">CareerUp</h1>
+    </div>
+  );
+};
+
+const WelcomeScreen = ({ nav }) => (
+  <div className="flex-1 bg-sky-50 flex flex-col justify-end relative overflow-hidden">
+    <div className="absolute inset-0 z-0">
+      <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" alt="Background" className="w-full h-full object-cover opacity-60 object-center" />
+      <div className="absolute inset-0 bg-gradient-to-t from-white via-white/90 to-sky-100/30" />
+    </div>
+    <div className="absolute top-1/4 -left-10 w-72 h-72 bg-blue-300/20 rounded-full blur-[80px] pointer-events-none z-0" />
+    <div className="absolute bottom-1/3 -right-10 w-72 h-72 bg-sky-300/20 rounded-full blur-[80px] pointer-events-none z-0" />
+    <div className="relative z-10 p-8 mb-4">
+      <div className="w-16 h-16 bg-white/80 backdrop-blur-xl border border-white shadow-xl rounded-2xl flex items-center justify-center mb-8 animate-pop">
+        <Sparkles size={32} className="text-blue-500" />
+      </div>
+      <h1 className="text-[42px] font-black text-slate-800 leading-[1.1] mb-4 tracking-tight animate-slide-up">Career <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-sky-400">Evolution.</span></h1>
+      <p className="text-slate-500 mt-4 text-[15px] leading-relaxed pr-4 font-medium animate-slide-up" style={{animationDelay: '0.1s'}}>AI-driven matching for India's top tech teams. Discover roles that fit your potential perfectly.</p>
+    </div>
+    <div className="relative z-10 flex flex-col gap-3 px-8 pb-8 animate-slide-up" style={{animationDelay: '0.2s'}}>
+      <PrimaryButton label="Create Account" onClick={() => nav('onboarding_prefs')} />
+      <PrimaryButton label="Log In" variant="secondary" onClick={() => nav('onboarding_prefs')} />
+    </div>
+  </div>
+);
+
+const OnboardingPreferencesScreen = ({ nav }) => {
+  const [lookingFor, setLookingFor] = useState('Active');
+  const [workStyle, setWorkStyle] = useState('Hybrid');
+
+  return (
+    <div className="flex-1 bg-gradient-to-br from-slate-50 to-sky-50 flex flex-col relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-blue-200/20 rounded-full blur-[80px] pointer-events-none" />
+      <div className="pt-16 pb-4 px-6 relative z-10 shrink-0">
+        <button onClick={() => nav('welcome')} className="w-10 h-10 bg-white/50 backdrop-blur-md rounded-full flex items-center justify-center border border-white shadow-sm mb-6"><ChevronLeft size={20} className="text-slate-500"/></button>
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-8 h-1.5 bg-blue-500 rounded-full"></div>
+          <div className="w-2 h-1.5 bg-slate-200 rounded-full"></div>
+          <div className="w-2 h-1.5 bg-slate-200 rounded-full"></div>
+        </div>
+        <h1 className="text-[28px] font-black text-slate-800 tracking-tight leading-tight">Your Preferences</h1>
+        <p className="text-[14px] font-medium text-slate-500 mt-2">Let's cold-start your AI recommendations.</p>
+      </div>
+      <div className="flex-1 overflow-y-auto px-6 pb-6 relative z-10 flex flex-col gap-8">
+        <div>
+          <h2 className="text-[13px] font-bold text-slate-800 mb-3">What are you looking for?</h2>
+          <div className="flex p-1.5 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/80 shadow-sm">
+            <button onClick={() => setLookingFor('Active')} className={`flex-1 py-3 rounded-xl text-[14px] font-bold transition-all ${lookingFor === 'Active' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}>Active Search</button>
+            <button onClick={() => setLookingFor('Passive')} className={`flex-1 py-3 rounded-xl text-[14px] font-bold transition-all ${lookingFor === 'Passive' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}>Passive / Browsing</button>
+          </div>
+        </div>
+        <div>
+          <h2 className="text-[13px] font-bold text-slate-800 mb-3">Desired Role</h2>
+          <div className="relative">
+            <input type="text" placeholder="e.g. Senior Product Designer" defaultValue="Senior Product Designer" className="w-full bg-white/60 backdrop-blur-xl border border-white shadow-inner rounded-2xl px-5 py-4 text-[15px] font-bold text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all" />
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-sky-100 text-blue-600 px-2 py-1 rounded-md text-[10px] font-bold">Auto-complete</div>
+          </div>
+        </div>
+        <div>
+          <h2 className="text-[13px] font-bold text-slate-800 mb-3">Preferred Work Style</h2>
+          <div className="flex flex-wrap gap-2.5">
+            {['Remote', 'Hybrid', 'On-site'].map(style => (
+              <button key={style} onClick={() => setWorkStyle(style)} className={`px-5 py-3 rounded-2xl text-[14px] font-bold border transition-all ${workStyle === style ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-sm' : 'bg-white/60 border-white text-slate-500 hover:bg-white shadow-sm'}`}>{style}</button>
+            ))}
+          </div>
+        </div>
+        <div className="mt-auto pt-4"><PrimaryButton label="Continue" onClick={() => nav('onboarding_upload')} icon={<ChevronRight size={18}/>} /></div>
+      </div>
+    </div>
+  );
+};
+
+const OnboardingUploadScreen = ({ nav }) => {
+  const [status, setStatus] = useState('idle');
+  const [progress, setProgress] = useState(0);
+
+  const simulateUpload = () => {
+    if (status !== 'idle') return;
+    setStatus('uploading');
+    let p = 0;
+    const interval = setInterval(() => {
+      p += 2; setProgress(p);
+      if (p === 30) setStatus('analyzing');
+      if (p === 70) setStatus('extracting');
+      if (p >= 100) { clearInterval(interval); setStatus('done'); setTimeout(() => nav('onboarding_review'), 600); }
+    }, 40);
+  };
+
+  return (
+    <div className="flex-1 bg-gradient-to-br from-slate-50 to-sky-50 flex flex-col relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-blue-200/20 rounded-full blur-[80px] pointer-events-none" />
+      <div className="pt-16 pb-4 px-6 relative z-10 shrink-0">
+        <button onClick={() => nav('onboarding_prefs')} disabled={status !== 'idle'} className="w-10 h-10 bg-white/50 backdrop-blur-md rounded-full flex items-center justify-center border border-white shadow-sm mb-6 disabled:opacity-50"><ChevronLeft size={20} className="text-slate-500"/></button>
+        <div className="flex items-center gap-2 mb-2"><div className="w-2 h-1.5 bg-slate-200 rounded-full"></div><div className="w-8 h-1.5 bg-blue-500 rounded-full"></div><div className="w-2 h-1.5 bg-slate-200 rounded-full"></div></div>
+        <h1 className="text-[28px] font-black text-slate-800 tracking-tight leading-tight">Upload Resume</h1>
+        <p className="text-[14px] font-medium text-slate-500 mt-2">Let our AI build your profile instantly.</p>
+      </div>
+
+      <div className="flex-1 px-6 pb-6 relative z-10 flex flex-col items-center justify-center">
+        <div onClick={simulateUpload} className={`w-full max-w-[280px] aspect-square bg-white/60 backdrop-blur-2xl rounded-full border-[4px] border-dashed flex flex-col items-center justify-center cursor-pointer transition-all shadow-[0_20px_40px_rgba(0,0,0,0.04)] relative ${status === 'idle' ? 'border-blue-200 hover:border-blue-400 hover:bg-blue-50/50' : 'border-transparent pointer-events-none'}`}>
+          {status !== 'idle' && (
+            <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none">
+              <circle cx="50%" cy="50%" r="48%" className="stroke-slate-100" strokeWidth="8" fill="none" />
+              <circle cx="50%" cy="50%" r="48%" className="stroke-blue-500 transition-all duration-75 ease-linear" strokeWidth="8" fill="none" strokeDasharray="300" strokeDashoffset={300 - (300 * progress) / 100} />
+            </svg>
+          )}
+          <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-4 transition-all ${status === 'done' ? 'bg-emerald-50 text-emerald-500 scale-110' : status !== 'idle' ? 'bg-blue-50 text-blue-500 animate-pulse' : 'bg-white text-blue-500 shadow-sm border border-white'}`}>
+            {status === 'done' ? <CheckCircle size={36} /> : <UploadCloud size={36} />}
+          </div>
+          <h2 className={`text-[17px] font-black ${status === 'done' ? 'text-emerald-600' : 'text-slate-800'}`}>
+            {status === 'idle' ? "Upload Resume" : status === 'uploading' ? "Uploading securely..." : status === 'analyzing' ? "Analyzing format..." : status === 'extracting' ? "Extracting vectors..." : "Complete!"}
+          </h2>
+          {status === 'idle' && <p className="text-[12px] text-slate-400 font-mono mt-1">PDF/DOCX (Max 10MB)</p>}
+          {status !== 'idle' && status !== 'done' && <p className="text-[14px] font-bold text-blue-500 mt-2 font-mono">{progress}%</p>}
+        </div>
+      </div>
+      {status === 'idle' && <div className="px-6 pb-8 pt-4"><PrimaryButton label="Skip for now" variant="secondary" onClick={() => nav('onboarding_review')} /></div>}
+    </div>
+  );
+};
+
+const OnboardingReviewScreen = ({ nav }) => (
+  <div className="flex-1 bg-gradient-to-br from-slate-50 to-sky-50 flex flex-col relative overflow-hidden">
+    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-200/20 rounded-full blur-[80px] pointer-events-none" />
+    <div className="pt-16 pb-4 px-6 relative z-20 shrink-0 bg-white/40 backdrop-blur-xl border-b border-white/60">
+      <button onClick={() => nav('onboarding_upload')} className="w-10 h-10 bg-white/50 backdrop-blur-md rounded-full flex items-center justify-center border border-white shadow-sm mb-6"><ChevronLeft size={20} className="text-slate-500"/></button>
+      <div className="flex items-center gap-2 mb-2"><div className="w-2 h-1.5 bg-slate-200 rounded-full"></div><div className="w-2 h-1.5 bg-slate-200 rounded-full"></div><div className="w-8 h-1.5 bg-blue-500 rounded-full"></div></div>
+      <h1 className="text-[28px] font-black text-slate-800 tracking-tight leading-tight">Confirm Data</h1>
+      <p className="text-[14px] font-medium text-slate-500 mt-2">Review your parsed vector profile.</p>
+    </div>
+    <div className="flex-1 overflow-y-auto px-6 py-6 relative z-10 hide-scrollbar pb-32">
+      <div className="bg-emerald-50/80 backdrop-blur-md border border-emerald-100 text-emerald-700 p-4 rounded-2xl flex items-start gap-3 mb-6 shadow-sm">
+        <CheckCircle size={20} className="shrink-0 mt-0.5 text-emerald-500" /> 
+        <p className="text-[13px] font-semibold leading-snug">Successfully extracted 4 years of experience and 12 core skills.</p>
+      </div>
+      <GlassInput label="Full Name" defaultValue="Arjun Mehta" />
+      <GlassInput label="Current Role" defaultValue="Senior Product Designer" />
+      <GlassInput label="Current Company" defaultValue="Swiggy" />
+      <div className="relative mb-5 group">
+        <label className="text-[10px] font-black text-blue-600 uppercase tracking-wider absolute -top-2.5 left-3 bg-white px-2 z-10 rounded-full shadow-sm border border-slate-100">Extracted Skills</label>
+        <div className="w-full bg-white/60 backdrop-blur-xl border-2 border-white shadow-inner rounded-2xl p-4 pt-5 focus-within:border-blue-400 focus-within:bg-white transition-all relative z-0 flex flex-wrap gap-2">
+           {["Design Systems", "Figma", "React", "UX Research", "Prototyping", "User Testing"].map(skill => (
+             <span key={skill} className="bg-blue-50 text-blue-600 border border-blue-100/50 px-2.5 py-1 rounded-lg text-[12px] font-bold flex items-center gap-1.5 shadow-sm">
+               {skill} <button className="text-blue-400 hover:text-blue-600"><X size={12}/></button>
+             </span>
+           ))}
+           <button className="bg-slate-50 border border-slate-200 text-slate-500 px-3 py-1 rounded-lg text-[12px] font-bold shadow-sm hover:bg-slate-100 transition">+ Add</button>
+        </div>
+      </div>
+    </div>
+    <div className="absolute bottom-0 left-0 w-full p-6 bg-white/80 backdrop-blur-xl border-t border-white shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-30">
+      <PrimaryButton label="Enter Dashboard" onClick={() => nav('discover')} icon={<Sparkles size={18}/>} />
+    </div>
+  </div>
+);
+
+
+// --- PROFILE & MARKET INSIGHTS COMPONENTS ---
+
+const InsightStatCard = ({ title, value, subtitle, highlight }) => (
+  <div className={`p-4 rounded-[1.25rem] border shadow-sm flex flex-col justify-center ${highlight ? 'bg-blue-50/80 border-blue-100 text-blue-800' : 'bg-white/60 backdrop-blur-md border-slate-100 text-slate-800'}`}>
+    <h4 className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${highlight ? 'text-blue-500' : 'text-slate-400'}`}>{title}</h4>
+    <p className="text-[17px] font-black tracking-tight mb-0.5 line-clamp-1">{value}</p>
+    <p className={`text-[10px] font-semibold line-clamp-1 ${highlight ? 'text-blue-600' : 'text-slate-500'}`}>{subtitle}</p>
+  </div>
+);
+
+const SkillBar = ({ name, value }) => (
+  <div className="flex flex-col gap-1.5">
+    <div className="flex justify-between items-center text-[12px] font-bold text-slate-700">
+      <span>{name}</span>
+      <span className="text-[11px] text-slate-400 font-mono">{value}%</span>
+    </div>
+    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+      <div className="h-full bg-gradient-to-r from-blue-500 to-sky-400 rounded-full shadow-sm transition-all duration-1000" style={{ width: `${value}%` }} />
+    </div>
+  </div>
+);
+
+const SalaryTrendChart = ({ data, labels }) => {
+  const max = 40; const min = 20; const height = 100; const width = 300;
+  const stepX = width / (data.length - 1);
+  const points = data.map((val, i) => `${i * stepX},${height - ((val - min) / (max - min)) * height}`).join(' ');
+
+  return (
+    <div className="w-full">
+      <svg viewBox={`0 -15 ${width} ${height + 25}`} className="w-full h-auto overflow-visible">
+        <defs>
+          <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#3b82f6" /><stop offset="100%" stopColor="#0ea5e9" /></linearGradient>
+          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" /><stop offset="100%" stopColor="#0ea5e9" stopOpacity="0" /></linearGradient>
+        </defs>
+        <line x1="0" y1="0" x2={width} y2="0" stroke="#f1f5f9" strokeWidth="1.5" />
+        <line x1="0" y1={height/2} x2={width} y2={height/2} stroke="#f1f5f9" strokeWidth="1.5" />
+        <line x1="0" y1={height} x2={width} y2={height} stroke="#f1f5f9" strokeWidth="1.5" />
+        <polygon points={`0,${height} ${points} ${width},${height}`} fill="url(#areaGrad)" />
+        <polyline points={points} fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        {data.map((val, i) => {
+          const x = i * stepX; const y = height - ((val - min) / (max - min)) * height;
+          return (
+            <g key={i}>
+              <circle cx={x} cy={y} r="4" fill="#fff" stroke="#0ea5e9" strokeWidth="2.5" />
+              {i === data.length - 1 && <text x={x} y={y - 12} fill="#0284c7" fontSize="13" fontWeight="bold" textAnchor="end">₹{val}L</text>}
+            </g>
+          );
+        })}
+      </svg>
+      <div className="flex justify-between mt-3 px-1 text-[10px] font-bold text-slate-400">{labels.map(lbl => <span key={lbl}>{lbl}</span>)}</div>
+    </div>
+  );
+};
+
+// NEW: Donut chart for Work Style Demand
+const WorkStyleDonutChart = () => {
+  const data = [
+    { label: 'Hybrid', value: 50, color: '#3b82f6', bg: 'bg-blue-500' }, 
+    { label: 'Remote', value: 35, color: '#0ea5e9', bg: 'bg-sky-500' }, 
+    { label: 'On-site', value: 15, color: '#818cf8', bg: 'bg-indigo-400' }
+  ];
+  let offset = 0;
+  
+  return (
+    <div className="flex items-center gap-5 mt-2">
+      <div className="relative w-24 h-24 shrink-0">
+        <svg viewBox="0 0 40 40" className="w-full h-full -rotate-90 drop-shadow-sm">
+          {data.map((item, i) => {
+            const strokeDasharray = `${item.value} 100`;
+            const strokeDashoffset = -offset;
+            offset += item.value;
+            return (
+              <circle
+                key={i}
+                cx="20" cy="20" r="15.915"
+                fill="transparent"
+                stroke={item.color}
+                strokeWidth="6"
+                strokeDasharray={strokeDasharray}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                className="transition-all duration-1000 ease-out"
+              />
+            )
+          })}
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center flex-col">
+          <span className="text-[10px] font-bold text-slate-400">Total</span>
+          <span className="text-[14px] font-black text-slate-800 leading-none">100%</span>
+        </div>
+      </div>
+      <div className="flex flex-col gap-3 flex-1">
+         {data.map(item => (
+            <div key={item.label} className="flex items-center justify-between">
+               <div className="flex items-center gap-2">
+                 <span className={`w-3 h-3 rounded-full shadow-sm ${item.bg}`}></span>
+                 <span className="text-[12px] font-bold text-slate-600">{item.label}</span>
+               </div>
+               <span className="text-[12px] font-black text-slate-800">{item.value}%</span>
+            </div>
+         ))}
+      </div>
+    </div>
+  );
+};
+
+const MarketInsightsScreen = ({ user, onBack }) => {
+  const salaryData = [28, 29, 30, 31, 33, 34];
+  const skillsData = [
+    { name: "Figma", value: 92 }, { name: "Design Systems", value: 88 }, { name: "Product Thinking", value: 81 },
+    { name: "UX Research", value: 76 }, { name: "Prototyping", value: 73 }, { name: "AI Tools", value: 69 },
+  ];
+
+  return (
+    <div className="flex-1 bg-gradient-to-br from-sky-50 to-white flex flex-col pb-28 relative">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-blue-100/40 rounded-full blur-[80px] pointer-events-none" />
+      <TopBar title="Market Insights" subtitle="Understand your value in the market" onBack={onBack} />
+      <div className="p-6 flex-1 overflow-y-auto hide-scrollbar relative z-10 flex flex-col gap-6">
+        
+        <div className="bg-white/80 backdrop-blur-md p-5 rounded-[1.5rem] border border-white shadow-[0_4px_15px_rgb(0,0,0,0.02)] flex items-center justify-between animate-pop">
+          <div>
+            <h2 className="text-[17px] font-black text-slate-800 tracking-tight">{user.role}</h2>
+            <p className="text-[12px] font-semibold text-slate-500 flex items-center gap-1 mt-1"><MapPin size={12} className="text-slate-400"/> {user.location}</p>
+          </div>
+          <div className="w-12 h-12 bg-blue-50 rounded-[1rem] flex items-center justify-center text-blue-600 border border-blue-100/50 shadow-sm shrink-0"><TrendingUp size={22} strokeWidth={2.5} /></div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-3 animate-pop" style={{animationDelay: '0.1s'}}>
+          <InsightStatCard title="Average Salary" value="₹32–45 LPA" subtitle="Top 20% in BLR" />
+          <InsightStatCard title="Recruiter Demand" value="High" subtitle="8% increase this month" highlight />
+          <InsightStatCard title="Top Paying Skill" value="Design Sys." subtitle="+12% salary bump" />
+          <InsightStatCard title="Fastest Growing" value="AI Tools" subtitle="In 45% of new JD's" />
+        </div>
+        
+        <div className="bg-gradient-to-r from-blue-600 to-sky-500 p-6 rounded-[2rem] shadow-[0_8px_25px_rgba(59,130,246,0.3)] text-white relative overflow-hidden animate-pop" style={{animationDelay: '0.15s'}}>
+           <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+           <Sparkles size={24} className="text-blue-100 mb-4" />
+           <h3 className="font-bold text-[17px] leading-tight mb-2 tracking-wide">Your Market Positioning</h3>
+           <p className="text-[13px] text-blue-50/90 font-medium leading-relaxed mb-4">Your profile aligns with the top 20% of visible candidates. Profiles with similar experience often negotiate between ₹35L and ₹45L.</p>
+           <div className="bg-white/20 backdrop-blur-md rounded-xl p-3.5 border border-white/30 text-[12px] font-medium leading-relaxed flex items-start gap-2.5">
+             <Info size={16} className="shrink-0 mt-0.5 text-blue-100" />
+             <span>Candidates with Design Systems + UX Research are earning <strong className="text-white font-black">12% more</strong> in Bengaluru.</span>
+           </div>
+        </div>
+
+        <div className="bg-white/60 backdrop-blur-xl p-5 rounded-[2rem] border border-white/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] animate-pop" style={{animationDelay: '0.2s'}}>
+           <h3 className="text-[15px] font-black text-slate-800 mb-0.5 tracking-tight">Salary Trends</h3>
+           <p className="text-[11px] text-slate-500 font-semibold mb-6">6-month rolling average (LPA)</p>
+           <SalaryTrendChart data={salaryData} labels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']} />
+        </div>
+
+        {/* Added Doughnut Chart for Work Style */}
+        <div className="bg-white/60 backdrop-blur-xl p-5 rounded-[2rem] border border-white/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] animate-pop" style={{animationDelay: '0.22s'}}>
+           <h3 className="text-[15px] font-black text-slate-800 mb-0.5 tracking-tight">Work Style Distribution</h3>
+           <p className="text-[11px] text-slate-500 font-semibold mb-4">Current market availability</p>
+           <WorkStyleDonutChart />
+        </div>
+
+        <div className="bg-white/60 backdrop-blur-xl p-5 rounded-[2rem] border border-white/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] animate-pop" style={{animationDelay: '0.25s'}}>
+           <h3 className="text-[15px] font-black text-slate-800 mb-0.5 tracking-tight">Skill Demand</h3>
+           <p className="text-[11px] text-slate-500 font-semibold mb-6">Most requested skills for your role</p>
+           <div className="flex flex-col gap-4">
+             {skillsData.map(skill => <SkillBar key={skill.name} name={skill.name} value={skill.value} />)}
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+// --- PROFILE SUBSCREENS ---
+
+const DocumentsScreen = ({ documents, setDocuments, onBack }) => {
+  const handleUpload = () => {
+    const newDoc = { id: Date.now(), name: `Resume_v${documents.length+1}.pdf`, date: "Just now", type: "PDF" };
+    setDocuments([newDoc, ...documents]);
+  };
+  const handleDelete = (id) => setDocuments(documents.filter(d => d.id !== id));
+
+  return (
+    <div className="flex-1 bg-gradient-to-br from-sky-50 to-white flex flex-col pb-28">
+      <TopBar title="Documents" onBack={onBack} />
+      <div className="p-6 overflow-y-auto hide-scrollbar flex-1">
+        <div onClick={handleUpload} className="bg-white/40 backdrop-blur-md rounded-2xl border-2 border-dashed border-blue-200 hover:border-blue-400 hover:bg-blue-50/50 p-8 flex flex-col items-center justify-center text-center cursor-pointer transition group shadow-sm mb-8">
+          <div className="w-12 h-12 bg-white text-blue-400 shadow-sm rounded-xl flex items-center justify-center mb-3 group-hover:text-blue-600 transition">
+            <UploadCloud size={24} />
+          </div>
+          <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider group-hover:text-blue-600 transition">Upload New Document</h2>
+        </div>
+        
+        <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Your Files</h3>
+        {documents.map(doc => (
+          <div key={doc.id} className="bg-white/80 backdrop-blur-md p-4 rounded-2xl border border-white shadow-sm mb-3 flex items-center justify-between animate-pop">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center"><FileText size={18} /></div>
+              <div>
+                <h3 className="font-bold text-slate-800 text-[14px]">{doc.name}</h3>
+                <p className="text-[10px] text-slate-400 font-mono mt-0.5">{doc.type} • {doc.date}</p>
+              </div>
+            </div>
+            <button onClick={() => handleDelete(doc.id)} className="p-2 text-slate-400 hover:text-red-500 bg-slate-50 rounded-full transition"><Trash2 size={16}/></button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const SettingsScreen = ({ settings, setSettings, onBack, onLogout }) => (
+  <div className="flex-1 bg-gradient-to-br from-sky-50 to-white flex flex-col pb-28">
+    <TopBar title="Settings" onBack={onBack} />
+    <div className="p-6 flex-1 overflow-y-auto hide-scrollbar">
+      <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white shadow-sm mb-6">
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-3"><Bell size={18} className="text-orange-400"/><p className="font-bold text-slate-800 text-[14px]">Push Notifications</p></div>
+          <div onClick={() => setSettings({...settings, notifications: !settings.notifications})} className={`w-11 h-6 rounded-full flex items-center p-1 cursor-pointer transition ${settings.notifications ? 'bg-blue-500' : 'bg-slate-300'}`}>
+            <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${settings.notifications ? 'translate-x-5' : ''}`}></div>
+          </div>
+        </div>
+        <div className="p-4 border-b border-slate-100 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition"><Shield size={18} className="text-emerald-500"/><p className="font-bold text-slate-800 text-[14px]">Privacy & Security</p></div>
+        <div className="p-4 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition rounded-b-2xl"><HelpCircle size={18} className="text-blue-500"/><p className="font-bold text-slate-800 text-[14px]">Help & Support</p></div>
+      </div>
+      <PrimaryButton label="Log Out" onClick={onLogout} variant="outline" className="text-red-500 border-red-200 bg-white/60 hover:bg-red-50" icon={<LogOut size={16}/>} />
+    </div>
+  </div>
+);
+
+const SubscriptionScreen = ({ user, onUpgrade, onBack }) => {
+  const [isYearly, setIsYearly] = useState(false);
+  return (
+    <div className="flex-1 bg-gradient-to-br from-sky-50 to-white flex flex-col pb-28">
+      <TopBar title="CareerUp Pro" onBack={onBack} />
+      <div className="p-6 overflow-y-auto hide-scrollbar">
+        <div className="flex mx-auto w-fit bg-slate-100/80 backdrop-blur-md border border-slate-200 p-1.5 rounded-xl mb-8 shadow-inner">
+          <button onClick={()=>setIsYearly(false)} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${!isYearly ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}>Monthly</button>
+          <button onClick={()=>setIsYearly(true)} className={`px-6 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${isYearly ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}>
+            Yearly <span className="text-[9px] bg-sky-100 text-blue-600 px-1.5 py-0.5 rounded-sm uppercase tracking-wider font-bold">Save 20%</span>
+          </button>
+        </div>
+        
+        {user.isPro ? (
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-400 p-6 rounded-2xl text-white text-center shadow-lg animate-pop">
+            <CheckCircle size={48} className="mx-auto mb-4" />
+            <h2 className="text-2xl font-black mb-2">You are a Pro member!</h2>
+            <p className="text-sm text-emerald-50 font-medium">Enjoy priority matching and advanced insights.</p>
+          </div>
+        ) : (
+          <div className="bg-gradient-to-br from-blue-600 to-sky-500 p-6 rounded-2xl shadow-[0_10px_30px_rgba(59,130,246,0.3)] text-white animate-pop">
+            <h2 className="text-xl font-bold mb-1">Pro Access</h2>
+            <p className="text-xs text-blue-100 font-medium mb-6">Supercharge your job search.</p>
+            <div className="flex items-baseline gap-1 mb-6">
+              <span className="text-3xl font-black font-mono">₹{isYearly ? '399' : '499'}</span><span className="text-xs font-bold text-blue-100">/mo</span>
+            </div>
+            <ul className="space-y-4 mb-8">
+              {["Priority AI Matches", "Profile View Analytics", "Direct Recruiter Comms", "Advanced Market Insights"].map((f, i) => (
+                <li key={i} className="flex gap-3 text-[13px] font-medium text-white">
+                  <div className="w-5 h-5 bg-white/20 rounded flex items-center justify-center shrink-0 border border-white/30"><Check size={12}/></div> {f}
+                </li>
+              ))}
+            </ul>
+            <PrimaryButton label="Upgrade Now" onClick={onUpgrade} variant="secondary" className="text-blue-600 border-none shadow-lg" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const ProfileScreen = ({ user, nav }) => {
+  const statWidgets = [
+    { label: "Profile Views", value: "124", trend: "+12%", icon: <Eye size={18}/>, color: "text-blue-500", bg: "bg-blue-50" },
+    { label: "Search Appearances", value: "38", trend: "+5%", icon: <Search size={18}/>, color: "text-sky-500", bg: "bg-sky-50" },
+    { label: "Recruiter Actions", value: "12", trend: "+2", icon: <MousePointerClick size={18}/>, color: "text-indigo-500", bg: "bg-indigo-50" },
+    { label: "New Matches", value: "7", trend: "New", icon: <Zap size={18}/>, color: "text-amber-500", bg: "bg-amber-50" },
+  ];
+
+  const quickActions = [
+    { title: "Market Insights", subtitle: "Salary & trends", icon: <TrendingUp size={20}/>, action: () => nav('insights') },
+    { title: "Documents", subtitle: "Resumes & files", icon: <FileText size={20}/>, action: () => nav('documents') },
+    { title: "Saved Jobs", subtitle: "Revisit shortlists", icon: <Bookmark size={20}/>, action: () => nav('saved') },
+    { title: "Settings", subtitle: "Privacy & account", icon: <Settings size={20}/>, action: () => nav('settings') },
+  ];
+
+  return (
+    <div className="flex-1 bg-gradient-to-br from-sky-50 to-white flex flex-col overflow-y-auto hide-scrollbar pb-28 relative">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-blue-100/40 rounded-full blur-[80px] pointer-events-none" />
+      <TopBar title="Profile" subtitle="Your career command center" rightIcon={<Settings size={20}/>} onClickRight={() => nav('settings')} />
+      
+      <div className="p-6 pt-2 relative z-10 flex-1 flex flex-col gap-6">
+        <div className="bg-white/60 backdrop-blur-xl p-5 rounded-[2rem] border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col animate-pop">
+          <div className="flex items-center gap-4 mb-4">
+             <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-white border border-white shadow-md rounded-2xl flex items-center justify-center font-bold text-2xl text-blue-600 shrink-0">{user.avatar}</div>
+             <div>
+                <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">{user.name} {user.isPro && <Star size={16} className="text-amber-400" fill="currentColor"/>}</h2>
+                <p className="text-blue-600 text-sm font-bold">{user.role}</p>
+                <p className="text-[12px] text-slate-500 font-medium flex items-center gap-1 mt-0.5"><MapPin size={12}/> {user.location}</p>
+             </div>
+          </div>
+          <div className="pt-4 border-t border-slate-100/50">
+            <div className="flex justify-between items-end mb-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Profile Strength</span>
+              <span className="text-[14px] font-black text-blue-600">{user.strength}%</span>
+            </div>
+            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-blue-500 to-sky-400 rounded-full" style={{ width: `${user.strength}%` }}></div>
+            </div>
+            <p className="text-[11px] font-semibold text-slate-500 mt-2 flex items-center gap-1">
+              <Sparkles size={12} className="text-amber-500"/> Your profile is attracting recruiter attention
+            </p>
+          </div>
+        </div>
+
+        {!user.isPro && (
+          <div onClick={() => nav('subscription')} className="bg-gradient-to-r from-blue-600 to-sky-500 p-5 rounded-[2rem] shadow-[0_8px_25px_rgba(59,130,246,0.3)] text-white relative overflow-hidden flex items-center justify-between cursor-pointer animate-pop" style={{animationDelay: "0.1s"}}>
+            <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+            <div className="relative z-10 pr-4">
+               <div className="flex items-center gap-1.5 text-blue-100 text-[10px] font-black uppercase tracking-wider mb-1"><Star size={12} fill="currentColor"/> CareerUp Pro</div>
+               <h3 className="font-bold text-[15px] leading-tight mb-1">Unlock advanced insights</h3>
+               <p className="text-[12px] text-blue-50/80 font-medium leading-snug">Upgrade to Pro to unlock higher visibility.</p>
+            </div>
+            <div className="relative z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center shrink-0 border border-white/30 shadow-sm"><ArrowUpRight size={20}/></div>
+          </div>
+        )}
+
+        <div className="animate-pop" style={{animationDelay: "0.2s"}}>
+          <h3 className="text-[13px] font-black text-slate-800 tracking-wide mb-3 pl-1">PERFORMANCE</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {statWidgets.map((s, i) => (
+              <div key={i} className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/80 shadow-[0_4px_15px_rgb(0,0,0,0.02)]">
+                <div className="flex justify-between items-start mb-3">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shadow-sm ${s.bg} ${s.color}`}>{s.icon}</div>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100">{s.trend}</span>
+                </div>
+                <p className="text-2xl font-black text-slate-800 font-mono tracking-tight">{s.value}</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="animate-pop" style={{animationDelay: "0.3s"}}>
+          <h3 className="text-[13px] font-black text-slate-800 tracking-wide mb-3 pl-1">QUICK ACTIONS</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {quickActions.map((action, i) => (
+              <div key={i} onClick={action.action} className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/80 shadow-[0_4px_15px_rgb(0,0,0,0.02)] hover:bg-white hover:shadow-md transition cursor-pointer flex flex-col gap-3">
+                <div className="text-blue-500 bg-blue-50 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm border border-blue-100/50">{action.icon}</div>
+                <div><h4 className="text-[14px] font-bold text-slate-800">{action.title}</h4><p className="text-[11px] font-semibold text-slate-500 mt-0.5">{action.subtitle}</p></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+// --- JOB DETAILS THEMED MODAL ---
+
+const JobDetailsSheet = ({ job, onClose, onApply, onSave, isApplied, isSaved }) => {
+  if (!job) return null;
+  return (
+    <div className="absolute inset-0 z-50 flex flex-col justify-end">
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={onClose} />
+      
+      {/* Themed Container */}
+      <div className={`backdrop-blur-3xl border-t border-white/60 shadow-2xl w-full h-[92%] rounded-t-[2.5rem] flex flex-col relative z-10 animate-slide-up ${job.theme?.bg || 'bg-white/95'}`}>
+        
+        <div className="w-full flex justify-center pt-4 pb-2 shrink-0">
+          <div className="w-12 h-1.5 bg-slate-800/20 rounded-full"></div>
+        </div>
+
+        <div className="flex justify-between items-center px-6 pb-4 border-b border-white/20 shrink-0 relative z-10">
+          <h2 className="text-lg font-black text-slate-800">Role Details</h2>
+          <button onClick={onClose} className="bg-white/40 text-slate-700 hover:bg-white/60 p-2 rounded-full transition shadow-sm"><X size={18}/></button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto hide-scrollbar pb-10">
+          <div className="relative w-full h-40 shrink-0">
+            <img src={job.imageUrl} alt="banner" className="w-full h-full object-cover" />
+            <div className={`absolute inset-0 bg-gradient-to-t ${job.theme?.bannerOverlay || 'from-white'} to-transparent opacity-95`} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+          </div>
+          
+          <div className="px-6 pb-6 relative -mt-12 z-10">
+            
+            <div className="flex items-end gap-4 mb-6">
+              <div className="w-20 h-20 bg-white rounded-[1.25rem] p-1.5 shadow-xl border-2 border-white/80 shrink-0">
+                <img src={job.companyLogo} alt={job.company} className="w-full h-full object-contain rounded-xl" />
+              </div>
+              <div className="pb-1">
+                <h1 className="text-2xl font-black text-slate-900 leading-tight mb-1">{job.title}</h1>
+                <p className={`text-[15px] font-bold ${job.theme?.text || 'text-slate-600'}`}>{job.company} • {job.location}</p>
+              </div>
+            </div>
+
+            <div className="bg-white/60 backdrop-blur-xl p-5 rounded-2xl border border-white/50 mb-6 shadow-sm">
+              <div className={`flex items-center gap-2 font-bold text-sm mb-2 uppercase tracking-wide ${job.theme?.text || 'text-blue-600'}`}>
+                <Sparkles size={16} /> 
+                <span>Why it's a match</span>
+                <span className="ml-auto font-black text-lg bg-white/80 px-2 py-0.5 rounded-lg shadow-sm border border-white/60">{job.match}%</span>
+              </div>
+              <p className="text-[13px] text-slate-700 leading-relaxed font-medium">{job.fitReason}</p>
+            </div>
+
+            <h3 className="text-[12px] font-black text-slate-500 uppercase tracking-wider mb-3">About the Role</h3>
+            <p className="text-[14px] text-slate-700 leading-relaxed mb-6 font-medium">{job.description}</p>
+            
+            <h3 className="text-[12px] font-black text-slate-500 uppercase tracking-wider mb-3">Responsibilities</h3>
+            <ul className="space-y-3 mb-6 bg-white/40 backdrop-blur-sm p-4 rounded-2xl border border-white/40 shadow-sm">
+              {job.responsibilities.map((req, i) => (
+                <li key={i} className="flex gap-3 text-[13px] font-semibold text-slate-700">
+                  <CheckSquare size={16} className={`${job.theme?.text || 'text-blue-500'} shrink-0 mt-0.5`} /> {req}
+                </li>
+              ))}
+            </ul>
+
+            <h3 className="text-[12px] font-black text-slate-500 uppercase tracking-wider mb-3">Perks & Benefits</h3>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {job.perks.map(perk => (
+                <span key={perk} className="bg-white/70 backdrop-blur-md border border-white/60 text-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm">{perk}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 bg-white/70 backdrop-blur-2xl border-t border-white/50 flex items-center justify-between shrink-0 pb-10 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] relative z-20">
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Salary Range</p>
+            <p className="text-[18px] font-black text-slate-900 font-mono tracking-tight">{job.salary}</p>
+          </div>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => { !isSaved && onSave(job); onClose(); }} 
+              disabled={isSaved} 
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-md transition ${isSaved ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-white border border-white text-slate-600 hover:scale-105'}`}
+            >
+              <Bookmark size={20} strokeWidth={2.5} fill={isSaved ? "currentColor" : "none"}/>
+            </button>
+            <button 
+              onClick={() => { !isApplied && onApply(job); onClose(); }} 
+              disabled={isApplied} 
+              className={`px-6 py-3 rounded-2xl font-bold text-[15px] flex items-center gap-2 transition-all shadow-[0_8px_20px_rgba(59,130,246,0.3)] ${isApplied ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-gradient-to-r from-blue-600 to-sky-500 text-white hover:shadow-lg hover:scale-105'}`}
+            >
+              {isApplied ? 'Applied' : 'Apply'} <ArrowUpRight size={18} strokeWidth={2.5}/>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+// --- SWIPE DISCOVERY (HOME) ---
+
+const SwipeableJobCard = ({ job, onSwipe, openDetails, isTop, index }) => {
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const cardRef = useRef(null);
+  const startPos = useRef({ x: 0, y: 0 });
+
+  const handlePointerDown = (e) => {
+    if (!isTop) return;
+    setIsDragging(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    startPos.current = { x: clientX - offset.x, y: clientY - offset.y };
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDragging || !isTop) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    setOffset({ x: clientX - startPos.current.x, y: clientY - startPos.current.y });
+  };
+
+  const handlePointerUp = () => {
+    if (!isDragging || !isTop) return;
+    setIsDragging(false);
+    
+    if (Math.abs(offset.x) < 5 && Math.abs(offset.y) < 5) {
+      openDetails(job);
+      return;
+    }
+
+    const threshold = window.innerWidth * 0.25;
+    if (offset.x > threshold) animateSwipe('right');
+    else if (offset.x < -threshold) animateSwipe('left');
+    else setOffset({ x: 0, y: 0 });
+  };
+
+  const animateSwipe = (direction) => {
+    const endX = direction === 'right' ? window.innerWidth : -window.innerWidth;
+    setOffset({ x: endX, y: offset.y });
+    setTimeout(() => { onSwipe(direction, job); }, 300);
+  };
+
+  useEffect(() => {
+    if (!isTop) return;
+    const handleProgrammaticSwipe = (e) => {
+      if (e.detail.id === job.id) animateSwipe(e.detail.direction);
+    };
+    window.addEventListener('triggerSwipe', handleProgrammaticSwipe);
+    return () => window.removeEventListener('triggerSwipe', handleProgrammaticSwipe);
+  }, [isTop, job.id, offset.y]);
+
+  const rotation = offset.x * 0.05;
+  const opacity = isTop ? 1 : 1 - (index * 0.15);
+  const scale = isTop ? 1 : 0.95 - (index * 0.05);
+  const translateY = isTop ? 0 : index * 12;
+
+  const cardStyle = {
+    transform: isTop ? `translate3d(${offset.x}px, ${offset.y}px, 0) rotate(${rotation}deg)` : `translate3d(0, ${translateY}px, 0) scale(${scale})`,
+    transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s',
+    opacity, zIndex: 10 - index
+  };
+
+  const applyOpacity = Math.min(Math.max(offset.x / 100, 0), 1);
+  const saveOpacity = Math.min(Math.max(-offset.x / 100, 0), 1);
+
+  return (
+    <div 
+      ref={cardRef}
+      className="absolute inset-0 w-full h-full touch-none prevent-select bg-white/95 backdrop-blur-3xl rounded-[2.5rem] border border-white shadow-[0_20px_40px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden will-change-transform cursor-pointer"
+      style={cardStyle}
+      onMouseDown={handlePointerDown} onMouseMove={handlePointerMove} onMouseUp={handlePointerUp} onMouseLeave={handlePointerUp}
+      onTouchStart={handlePointerDown} onTouchMove={handlePointerMove} onTouchEnd={handlePointerUp}
+    >
+      <div className="absolute inset-0 bg-blue-500/15 z-30 pointer-events-none transition-opacity" style={{ opacity: applyOpacity }}>
+        <div className="absolute top-1/3 left-6 border-4 border-blue-500 text-blue-500 font-black text-3xl uppercase tracking-widest px-6 py-2 rounded-2xl rotate-[-15deg] bg-white/90 backdrop-blur-md shadow-2xl">Apply</div>
+      </div>
+      <div className="absolute inset-0 bg-slate-500/15 z-30 pointer-events-none transition-opacity" style={{ opacity: saveOpacity }}>
+        <div className="absolute top-1/3 right-6 border-4 border-slate-500 text-slate-500 font-black text-3xl uppercase tracking-widest px-6 py-2 rounded-2xl rotate-[15deg] bg-white/90 backdrop-blur-md shadow-2xl">Save</div>
+      </div>
+
+      <div className="relative h-[45%] w-full shrink-0 overflow-hidden bg-slate-100">
+        <img src={job.imageUrl} alt={job.company} className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/5 to-black/30" />
+        <div className="absolute top-5 right-5"><MatchBadgeOverlay score={job.match} /></div>
+      </div>
+
+      <div className="px-6 pb-5 pt-0 flex-1 flex flex-col bg-white relative">
+        <div className="absolute -top-10 left-6">
+          <div className="w-16 h-16 bg-white rounded-2xl p-1.5 shadow-[0_4px_15px_rgba(0,0,0,0.08)] border-2 border-white/80">
+            <img src={job.companyLogo} alt={job.company} className="w-full h-full object-contain rounded-xl" />
+          </div>
+        </div>
+
+        <div className="mt-8 mb-3">
+          <h2 className="text-[22px] font-black text-slate-800 leading-tight tracking-tight mb-1 line-clamp-2">{job.title}</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-[15px] font-bold text-slate-500">{job.company}</span>
+            <span className="w-1 h-1 bg-slate-300 rounded-full" />
+            <span className="bg-sky-50 text-blue-600 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border border-sky-100/50">{job.type}</span>
+          </div>
+        </div>
+
+        <p className="text-[13px] text-slate-600 font-medium leading-relaxed line-clamp-3 mb-4">{job.description}</p>
+
+        <div className="grid grid-cols-2 gap-3 mt-auto mb-2">
+          <div className="bg-slate-50/80 border border-slate-100 p-3 rounded-2xl flex flex-col justify-center shadow-sm">
+            <div className="flex items-center gap-1.5 mb-1 text-slate-500">
+              <MapPin size={14} className="text-blue-500" />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Location</span>
+            </div>
+            <span className="text-[12px] font-bold text-slate-800 truncate">{job.location}{job.area ? `, ${job.area}` : ''}</span>
+          </div>
+          <div className="bg-slate-50/80 border border-slate-100 p-3 rounded-2xl flex flex-col justify-center shadow-sm">
+            <div className="flex items-center gap-1.5 mb-1 text-slate-500">
+              <div className="w-3.5 h-3.5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] font-black">₹</div>
+              <span className="text-[10px] font-bold uppercase tracking-wider">Package</span>
+            </div>
+            <span className="text-[12px] font-bold text-slate-800 truncate">{job.salary}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SwipeDiscoveryScreen = ({ deck, onSwipe, openDetails }) => {
+  const triggerSwipe = (direction) => {
+    if (deck.length > 0) window.dispatchEvent(new CustomEvent('triggerSwipe', { detail: { id: deck[0].id, direction } }));
+  };
+
+  return (
+    <div className="flex-1 bg-gradient-to-br from-sky-50 via-white to-blue-50 flex flex-col relative overflow-hidden pb-28">
+      <div className="absolute top-0 right-0 w-72 h-72 bg-blue-200/30 rounded-full blur-[80px] pointer-events-none" />
+      <div className="absolute bottom-20 left-0 w-72 h-72 bg-sky-200/30 rounded-full blur-[80px] pointer-events-none" />
+      <TopBar showBranding={true} />
+      
+      <div className="px-6 pt-4 pb-2 relative z-10 shrink-0">
+        <h1 className="text-[32px] font-black text-slate-800 tracking-tight leading-tight">For You</h1>
+        <p className="text-[14px] font-medium text-slate-500 mt-1">Recommended roles based on your profile.</p>
+      </div>
+      
+      <div className="flex-1 relative w-full max-w-sm mx-auto px-5 flex flex-col justify-center min-h-[400px]">
+        {deck.length > 0 ? (
+          <div className="relative w-full h-full max-h-[560px]">
+            {deck.slice(0, 3).reverse().map((job, idx, arr) => {
+              const actualIndex = arr.length - 1 - idx;
+              return <SwipeableJobCard key={job.id} job={job} index={actualIndex} isTop={actualIndex === 0} onSwipe={onSwipe} openDetails={openDetails} />;
+            })}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-center relative z-10 p-6 bg-white/40 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-sm animate-pop">
+            <div className="w-20 h-20 bg-white shadow-md rounded-full flex items-center justify-center mb-6"><CheckCircle size={32} className="text-blue-500" /></div>
+            <h2 className="text-2xl font-black text-slate-800 mb-2">All Caught Up!</h2>
+            <p className="text-slate-500 text-sm font-medium mb-8">You've reviewed all recommended matches for today.</p>
+          </div>
+        )}
+      </div>
+
+      <div className="shrink-0 pt-3 pb-2 px-6 flex justify-center items-center gap-6 relative z-20">
+        <button onClick={() => triggerSwipe('left')} disabled={deck.length === 0} className="w-16 h-16 bg-white/90 backdrop-blur-xl rounded-full shadow-[0_8px_20px_rgba(0,0,0,0.06)] border border-white flex items-center justify-center text-slate-400 hover:text-slate-600 hover:scale-105 transition active:scale-95 disabled:opacity-50">
+          <XIcon size={28} strokeWidth={2.5} />
+        </button>
+        <button onClick={() => deck.length > 0 && openDetails(deck[0])} disabled={deck.length === 0} className="w-14 h-14 bg-white/90 backdrop-blur-xl rounded-full shadow-[0_8px_20px_rgba(0,0,0,0.06)] border border-white flex items-center justify-center text-blue-500 hover:text-blue-600 hover:scale-105 transition active:scale-95 disabled:opacity-50">
+          <Info size={22} strokeWidth={2.5} />
+        </button>
+        <button onClick={() => triggerSwipe('right')} disabled={deck.length === 0} className="w-20 h-20 bg-gradient-to-tr from-blue-600 to-sky-400 rounded-full shadow-[0_10px_25px_rgba(59,130,246,0.3)] border border-blue-400/30 flex items-center justify-center text-white hover:scale-105 transition active:scale-95 disabled:opacity-50">
+          <Heart size={36} strokeWidth={2.5} fill="currentColor" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+
+// --- SEARCH / EXPLORE SCREEN ---
+
+const FilterBottomSheet = ({ filterKey, title, options, selected, onApply, onClose }) => {
+  const [tempSelected, setTempSelected] = useState([...selected]);
+  const toggleOption = (opt) => setTempSelected(prev => prev.includes(opt) ? prev.filter(item => item !== opt) : [...prev, opt]);
+
+  return (
+    <div className="absolute inset-0 z-50 flex flex-col justify-end">
+      <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm transition-opacity" onClick={onClose} />
+      <div className="bg-white/95 backdrop-blur-2xl border-t border-white shadow-[0_-10px_40px_rgba(0,0,0,0.1)] w-full max-h-[85%] rounded-t-[2.5rem] flex flex-col relative z-10 animate-slide-up">
+        <div className="w-full flex justify-center pt-4 pb-2 shrink-0"><div className="w-12 h-1.5 bg-slate-200 rounded-full"></div></div>
+        <div className="flex justify-between items-center px-6 pb-4 border-b border-slate-100 shrink-0">
+          <h2 className="text-lg font-bold text-slate-800">{title}</h2>
+          <button onClick={onClose} className="bg-slate-50 text-slate-500 hover:text-slate-800 p-2 rounded-full transition"><X size={18}/></button>
+        </div>
+        <div className="flex-1 overflow-y-auto hide-scrollbar p-6">
+          <div className="space-y-3">
+            {options.map(opt => {
+              const isSelected = tempSelected.includes(opt);
+              return (
+                <div key={opt} onClick={() => toggleOption(opt)} className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer ${isSelected ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-200'}`}>
+                  <span className={`text-[15px] ${isSelected ? 'font-bold text-blue-700' : 'font-semibold text-slate-600'}`}>{opt}</span>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${isSelected ? 'bg-blue-500 text-white shadow-md' : 'border-2 border-slate-200'}`}>{isSelected && <Check size={14} strokeWidth={3} />}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div className="p-6 bg-white/80 backdrop-blur-xl border-t border-slate-100 flex items-center gap-4 shrink-0 pb-10">
+          <button onClick={() => setTempSelected([])} className="px-6 py-4 rounded-2xl font-bold text-[15px] text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition border border-transparent">Clear</button>
+          <PrimaryButton label={`Apply ${tempSelected.length > 0 ? `(${tempSelected.length})` : ''}`} onClick={() => onApply(filterKey, tempSelected)} className="flex-1" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SearchResultCard = ({ job, openDetails, onSave, onApply, isSaved, isApplied }) => (
+  <div onClick={() => openDetails(job)} className="bg-white/60 backdrop-blur-xl p-5 rounded-[2rem] border border-white/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all cursor-pointer mb-4 flex flex-col">
+    <div className="flex justify-between items-start mb-4">
+      <div className="flex items-center gap-3">
+        <img src={job.companyLogo} alt={job.company} className="w-12 h-12 rounded-xl shadow-sm border border-slate-100 object-contain p-1 bg-white" />
+        <div>
+          <h3 className="font-bold text-slate-800 text-[15px] leading-tight">{job.company}</h3>
+          <p className="text-[12px] text-slate-500 font-medium flex items-center gap-1 mt-0.5"><MapPin size={10}/> {job.location}</p>
+        </div>
+      </div>
+      <MatchBadge score={job.match} />
+    </div>
+    <h2 className="font-black text-slate-800 text-[18px] leading-tight mb-3 line-clamp-1">{job.title}</h2>
+    <div className="flex items-center gap-2 mb-4">
+      <span className="bg-blue-50/50 text-blue-600 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border border-blue-100/50">{job.type}</span>
+      <span className="text-[13px] font-bold text-slate-700 font-mono tracking-tight">{job.salary}</span>
+    </div>
+    <div className="flex flex-wrap gap-1.5 mb-5">
+      {job.tags.slice(0, 3).map(tag => <span key={tag} className="bg-white border border-slate-200 text-slate-500 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-sm">{tag}</span>)}
+    </div>
+    <div className="flex gap-3 mt-auto">
+      <button onClick={(e) => { e.stopPropagation(); !isSaved && onSave(job); }} disabled={isSaved} className={`flex-1 font-bold py-3 rounded-2xl text-[13px] transition ${isSaved ? 'bg-blue-50 text-blue-600 border border-blue-100 shadow-inner' : 'bg-white border border-slate-200 text-slate-600 shadow-sm hover:bg-slate-50'}`}>
+        {isSaved ? 'Saved' : 'Save'}
+      </button>
+      <button onClick={(e) => { e.stopPropagation(); !isApplied && onApply(job); }} disabled={isApplied} className={`flex-1 font-bold py-3 rounded-2xl text-[13px] transition ${isApplied ? 'bg-emerald-500 text-white shadow-inner' : 'bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-[0_4px_15px_rgba(59,130,246,0.3)] hover:shadow-lg'}`}>
+        {isApplied ? 'Applied' : 'Apply'}
+      </button>
+    </div>
+  </div>
+);
+
+const SearchScreen = ({ allJobs, savedJobs, appliedJobs, onSave, onApply, openDetails }) => {
+  const [filters, setFilters] = useState({ jobType: [], location: [], salary: [], size: [] });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeSheet, setActiveSheet] = useState(null);
+
+  const handleApplyFilter = (key, selected) => { setFilters(prev => ({ ...prev, [key]: selected })); setActiveSheet(null); };
+  const hasFilters = Object.values(filters).some(arr => arr.length > 0) || searchQuery.trim().length > 0;
+
+  const filteredJobs = allJobs.filter(job => {
+    let match = true;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      if (!job.title.toLowerCase().includes(query) && !job.company.toLowerCase().includes(query)) match = false;
+    }
+    if (filters.jobType.length > 0 && !filters.jobType.includes(job.type)) match = false;
+    if (filters.location.length > 0 && !filters.location.some(l => job.location.includes(l))) match = false;
+    if (filters.size.length > 0 && !filters.size.includes(job.companySize)) match = false;
+    return match;
+  });
+
+  return (
+    <div className="flex-1 bg-gradient-to-br from-slate-50 to-sky-50 flex flex-col relative pb-28">
+      <div className="bg-white/70 backdrop-blur-2xl border-b border-white/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] shrink-0 z-30 sticky top-0 pt-12">
+        <div className="px-6 pb-2 text-center">
+          <h1 className="text-[17px] font-black text-slate-800 tracking-wide">Search</h1>
+          <p className="text-[11px] font-semibold text-slate-500 mt-0.5">Find roles that match your exact preferences</p>
+        </div>
+        <div className="px-6 py-3">
+          <div className="flex items-center gap-3 bg-white/80 backdrop-blur-xl p-3.5 rounded-2xl border border-white shadow-[0_4px_15px_rgb(0,0,0,0.03)] focus-within:shadow-[0_4px_20px_rgba(59,130,246,0.1)] focus-within:border-blue-200 transition-all">
+            <Search size={20} className="text-blue-500" />
+            <input 
+              type="text" placeholder="Search roles, companies..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+              className="bg-transparent border-none outline-none w-full text-[15px] font-bold text-slate-800 placeholder:text-slate-400 placeholder:font-medium" 
+            />
+            {searchQuery && <button onClick={()=>setSearchQuery("")}><XIcon size={16} className="text-slate-400"/></button>}
+          </div>
+        </div>
+
+        <div className="flex gap-2.5 overflow-x-auto hide-scrollbar px-6 pb-4">
+          {Object.keys(FILTER_LABELS).map(key => {
+            const count = filters[key].length;
+            const isActive = count > 0;
+            return (
+              <button 
+                key={key} onClick={() => setActiveSheet(key)}
+                className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-bold border transition shadow-sm ${isActive ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+              >
+                {FILTER_LABELS[key]}
+                {isActive && <span className="bg-blue-600 text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] ml-1">{count}</span>}
+                <ChevronDown size={14} className={isActive ? 'text-blue-500' : 'text-slate-400'} />
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto hide-scrollbar p-6">
+        <div className="flex justify-between items-end mb-6">
+          <h2 className="text-[18px] font-black text-slate-800">{hasFilters ? 'Refined Results' : 'Explore All'}</h2>
+          <span className="text-[12px] font-bold text-slate-400">{filteredJobs.length} jobs</span>
+        </div>
+
+        {filteredJobs.map(job => (
+          <SearchResultCard 
+            key={job.id} job={job} openDetails={openDetails} onSave={onSave} onApply={onApply} 
+            isSaved={savedJobs.some(j => j.id === job.id)} isApplied={appliedJobs.some(j => j.id === job.id)}
+          />
+        ))}
+        
+        {filteredJobs.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-center animate-pop">
+             <div className="w-20 h-20 bg-white/60 backdrop-blur-md rounded-full flex items-center justify-center text-blue-500 mb-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white">
+               <Search size={32} strokeWidth={1.5} />
+             </div>
+             <h2 className="text-[20px] font-black text-slate-800 mb-2 tracking-tight">No matching roles found</h2>
+             <p className="text-[14px] text-slate-500 font-medium leading-relaxed max-w-[250px]">Try changing your filters or searching broader terms.</p>
+          </div>
+        )}
+      </div>
+
+      {activeSheet && (
+        <FilterBottomSheet filterKey={activeSheet} title={FILTER_LABELS[activeSheet]} options={FILTER_OPTIONS[activeSheet]} selected={filters[activeSheet]} onApply={handleApplyFilter} onClose={() => setActiveSheet(null)} />
+      )}
+    </div>
+  );
+};
+
+
+// --- MAIN APP (State & Routing) ---
+
+export default function App() {
+  const [currentScreen, setCurrentScreen] = useState('splash');
+  const [deck, setDeck] = useState(baseJobs);
+  const [savedJobs, setSavedJobs] = useState([]);
+  const [appliedJobs, setAppliedJobs] = useState([
+    { ...baseJobs[0], id: 101, isActive: true, status: "Screening", appliedAt: "Applied 3 days ago", updatedAt: "Updated yesterday", stageIndex: 1, stages: ["Applied", "Screening", "Interview", "Offer"] },
+    ...mockPastApplications
+  ]); 
+  const [chats, setChats] = useState(mockInitialChats);
+  const [user, setUser] = useState(initialUser);
+  const [documents, setDocuments] = useState([{ id: 1, name: "Arjun_Resume_v4.pdf", date: "2 days ago", type: "PDF" }]);
+  const [settings, setSettings] = useState({ notifications: true, darkMode: false });
+  
+  const [selectedJobDetails, setSelectedJobDetails] = useState(null);
+  const [selectedChat, setSelectedChat] = useState(null);
+
+  const handleApply = (job) => {
+    if (!appliedJobs.find(j => j.id === job.id)) {
+      const newApp = { 
+        ...job, isActive: true, status: "Applied", appliedAt: "Just now", updatedAt: "Just now", stageIndex: 0, stages: ["Applied", "Screening", "Interview", "Offer"] 
+      };
+      setAppliedJobs(prev => [newApp, ...prev]);
+    }
+    setDeck(prev => prev.filter(j => j.id !== job.id));
+    setSavedJobs(prev => prev.filter(j => j.id !== job.id));
+  };
+
+  const handleSave = (job) => {
+    if (!savedJobs.find(j => j.id === job.id)) setSavedJobs(prev => [job, ...prev]);
+    setDeck(prev => prev.filter(j => j.id !== job.id));
+  };
+
+  const handleSwipe = (direction, job) => {
+    direction === 'right' ? handleApply(job) : handleSave(job);
+  };
+
+  const handleSendMessage = (chatId, text) => {
+    setChats(prevChats => prevChats.map(c => {
+      if (c.id === chatId) {
+        return { 
+          ...c, lastMessage: text, time: "Just now", unreadCount: 0,
+          messages: [...c.messages, { id: Date.now(), text, sender: 'user', time: 'Just now' }] 
+        };
+      }
+      return c;
+    }));
+  };
+
+  const handleOpenChat = (chat) => {
+    setChats(prev => prev.map(c => c.id === chat.id ? { ...c, unreadCount: 0 } : c));
+    setSelectedChat(chat);
+  };
+
+  const navigateTo = (screen) => {
+    setCurrentScreen(screen);
+    setSelectedChat(null);
+    window.scrollTo(0, 0);
+  };
+
+  const totalUnread = chats.reduce((sum, chat) => sum + chat.unreadCount, 0);
+  const showBottomNav = ['discover', 'search', 'applications', 'messages', 'profile', 'saved', 'insights'].includes(currentScreen);
+
+  const BottomNav = () => (
+    <div className="absolute bottom-0 w-full bg-white/70 backdrop-blur-2xl border-t border-white/80 px-6 py-4 flex justify-between items-center z-40 pb-8 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
+      {[
+        { id: 'discover', icon: Home },
+        { id: 'search', icon: Search },
+        { id: 'applications', icon: Briefcase },
+        { id: 'messages', icon: MessageSquare, badge: totalUnread },
+        { id: 'profile', icon: User }
+      ].map(item => {
+        const Icon = item.icon;
+        const isActive = currentScreen === item.id || (item.id === 'profile' && ['saved', 'insights', 'documents', 'settings', 'subscription'].includes(currentScreen));
+        return (
+          <button key={item.id} onClick={() => navigateTo(item.id)} className={`p-3 rounded-2xl transition-all duration-300 relative ${isActive ? 'bg-blue-50 text-blue-600 shadow-sm scale-110' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'}`}>
+            <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
+            {item.badge > 0 && <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-blue-500 text-white text-[8px] font-bold rounded-full border-2 border-white flex items-center justify-center">{item.badge}</span>}
+          </button>
+        )
+      })}
+    </div>
+  );
+
+  const renderScreen = () => {
+    if (selectedChat) return <ChatDetailScreen chat={chats.find(c=>c.id === selectedChat.id)} onBack={() => setSelectedChat(null)} onSendMessage={handleSendMessage} />;
+    
+    switch(currentScreen) {
+      case 'splash': return <SplashScreen nav={navigateTo} />;
+      case 'welcome': return <WelcomeScreen nav={navigateTo} />;
+      case 'onboarding_prefs': return <OnboardingPreferencesScreen nav={navigateTo} />;
+      case 'onboarding_upload': return <OnboardingUploadScreen nav={navigateTo} />;
+      case 'onboarding_review': return <OnboardingReviewScreen nav={navigateTo} />;
+      case 'discover': return <SwipeDiscoveryScreen deck={deck} onSwipe={handleSwipe} openDetails={setSelectedJobDetails} />;
+      case 'search': return <SearchScreen allJobs={baseJobs} savedJobs={savedJobs} appliedJobs={appliedJobs} onSave={handleSave} onApply={handleApply} openDetails={setSelectedJobDetails} />;
+      case 'applications': return <ApplicationsScreen appliedJobs={appliedJobs} />;
+      case 'messages': return <MessagesListScreen chats={chats} onChatSelect={handleOpenChat} />;
+      case 'profile': return <ProfileScreen user={user} nav={navigateTo} />;
+      case 'insights': return <MarketInsightsScreen user={user} onBack={() => navigateTo('profile')} />;
+      case 'saved': return <SavedJobsScreen savedJobs={savedJobs} onApply={handleApply} onRemove={(job) => setSavedJobs(prev => prev.filter(j => j.id !== job.id))} openDetails={setSelectedJobDetails} onBack={() => navigateTo('profile')} nav={navigateTo} />;
+      case 'documents': return <DocumentsScreen documents={documents} setDocuments={setDocuments} onBack={() => navigateTo('profile')} />;
+      case 'settings': return <SettingsScreen settings={settings} setSettings={setSettings} onBack={() => navigateTo('profile')} onLogout={()=>navigateTo('welcome')} />;
+      case 'subscription': return <SubscriptionScreen user={user} onUpgrade={() => setUser({...user, isPro: true})} onBack={() => navigateTo('profile')} />;
+      default: return <SplashScreen nav={navigateTo} />;
+    }
+  };
+
+  const isJobApplied = appliedJobs.some(j => j.id === selectedJobDetails?.id);
+  const isJobSaved = savedJobs.some(j => j.id === selectedJobDetails?.id);
+
+  return (
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans selection:bg-blue-100 overflow-x-hidden">
+      <GlobalStyles />
+      <div className="w-full max-w-[400px] h-[850px] bg-white rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.1)] relative overflow-hidden flex flex-col border-[8px] border-slate-200 ring-4 ring-slate-100/50">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-slate-900 rounded-b-3xl z-50 flex justify-center items-center shadow-md">
+          <div className="w-16 h-1.5 bg-slate-800 rounded-full"></div>
+        </div>
+        <div className="h-10 w-full bg-transparent z-40 absolute top-0 pointer-events-none flex justify-between px-6 items-end pb-1 text-[11px] font-bold shrink-0">
+          <span className="text-slate-800 mix-blend-overlay">9:41</span>
+        </div>
+
+        {renderScreen()}
+
+        {selectedJobDetails && <JobDetailsSheet job={selectedJobDetails} onClose={() => setSelectedJobDetails(null)} onApply={handleApply} onSave={handleSave} isApplied={isJobApplied} isSaved={isJobSaved} />}
+
+        {showBottomNav && !selectedChat && <BottomNav />}
+        
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[120px] h-1.5 bg-slate-300 rounded-full z-50 pointer-events-none"></div>
+      </div>
+    </div>
+  );
+}
