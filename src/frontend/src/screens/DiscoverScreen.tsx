@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import JobDetailsSheet from "../components/JobDetailsSheet";
+import { useApplications } from "../context/ApplicationsContext";
 import { MOCK_JOBS, type MockJob } from "../data/mockJobs";
 
 type SwipeAction = "apply" | "save" | "super" | null;
@@ -74,7 +75,7 @@ const SKILL_COLORS = [
 const MOCK_NOTIFICATIONS = [
   {
     id: 1,
-    text: "New match: Staff Engineer at Linear \u2014 88% match",
+    text: "New match: Staff Engineer at Linear — 88% match",
     time: "2 min ago",
   },
   {
@@ -89,7 +90,7 @@ const MOCK_NOTIFICATIONS = [
   },
   {
     id: 4,
-    text: "Interview reminder: Notion UX Lead \u2014 Tomorrow 2PM",
+    text: "Interview reminder: Notion UX Lead — Tomorrow 2PM",
     time: "Yesterday",
   },
   {
@@ -260,7 +261,7 @@ function JobCard({
         </div>
 
         <div className="mt-2 text-right">
-          <span className="text-xs text-gray-400">Tap for details \u2192</span>
+          <span className="text-xs text-gray-400">Tap for details &rarr;</span>
         </div>
       </div>
     </div>
@@ -278,6 +279,7 @@ export default function DiscoverScreen() {
   const startX = useRef(0);
   const startY = useRef(0);
   const startTime = useRef(0);
+  const { addApplication, isApplied } = useApplications();
 
   function handleTouchStart(e: React.TouchEvent) {
     startX.current = e.touches[0].clientX;
@@ -321,7 +323,10 @@ export default function DiscoverScreen() {
     }
   }
 
-  function triggerSwipe(dir: string, _action: SwipeAction) {
+  function triggerSwipe(dir: string, action: SwipeAction) {
+    if (action === "apply" && jobs.length > 0) {
+      addApplication(jobs[0]);
+    }
     setFlying(dir);
     setTimeout(() => {
       setJobs((prev) => prev.slice(1));
@@ -440,6 +445,8 @@ export default function DiscoverScreen() {
         <JobDetailsSheet
           job={selectedJob}
           onClose={() => setSelectedJob(null)}
+          applied={isApplied(selectedJob.id)}
+          onApply={() => addApplication(selectedJob)}
         />
       )}
 
@@ -471,7 +478,7 @@ export default function DiscoverScreen() {
                 onClick={() => setShowNotifications(false)}
                 className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-semibold text-sm"
               >
-                \u2715
+                X
               </button>
             </div>
             <div className="px-5 py-2 pb-8">

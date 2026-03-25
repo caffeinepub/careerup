@@ -52,8 +52,14 @@ function CompanyLogoImg({
 export default function JobDetailsSheet({
   job,
   onClose,
-}: { job: MockJob; onClose: () => void }) {
-  const [applied, setApplied] = useState(false);
+  applied,
+  onApply,
+}: {
+  job: MockJob;
+  onClose: () => void;
+  applied: boolean;
+  onApply: () => void;
+}) {
   const [saved, setSaved] = useState(false);
   const startY = useRef(0);
   const [dragY, setDragY] = useState(0);
@@ -277,16 +283,17 @@ export default function JobDetailsSheet({
           </button>
           <button
             type="button"
-            onClick={() => setApplied(true)}
+            data-ocid="job.apply.button"
+            onClick={onApply}
             disabled={applied}
-            className="flex-[2] py-3.5 rounded-2xl font-semibold text-white text-sm shadow-lg active:scale-95 transition-all disabled:opacity-60"
+            className="flex-[2] py-3.5 rounded-2xl font-semibold text-white text-sm shadow-lg active:scale-95 transition-all disabled:opacity-80"
             style={{
               background: applied
                 ? "#10b981"
                 : "linear-gradient(135deg, #2563EB, #7C3AED)",
             }}
           >
-            {applied ? "Applied!" : "Apply Now"}
+            {applied ? "Applied" : "Apply Now"}
           </button>
         </div>
       </div>

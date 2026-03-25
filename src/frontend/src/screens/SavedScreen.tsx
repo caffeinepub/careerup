@@ -5,12 +5,13 @@ import { MOCK_JOBS } from "../data/mockJobs";
 import type { MockJob } from "../data/mockJobs";
 
 function formatSalary(min: number, max: number) {
-  return `$${Math.round(min / 1000)}K–$${Math.round(max / 1000)}K`;
+  return `$${Math.round(min / 1000)}K\u2013$${Math.round(max / 1000)}K`;
 }
 
 export default function SavedScreen() {
   const [saved] = useState(MOCK_JOBS.slice(0, 3));
   const [selectedJob, setSelectedJob] = useState<MockJob | null>(null);
+  const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set());
 
   return (
     <div className="flex flex-col h-full bg-white">
@@ -46,7 +47,7 @@ export default function SavedScreen() {
                   {job.title}
                 </p>
                 <p className="text-gray-500 text-xs">
-                  {job.company} • {job.location}
+                  {job.company} \u2022 {job.location}
                 </p>
                 <p className="text-blue-600 text-xs font-medium mt-0.5">
                   {formatSalary(job.salaryMin, job.salaryMax)}
@@ -69,6 +70,12 @@ export default function SavedScreen() {
         <JobDetailsSheet
           job={selectedJob}
           onClose={() => setSelectedJob(null)}
+          applied={appliedJobIds.has(selectedJob.id.toString())}
+          onApply={() =>
+            setAppliedJobIds(
+              (prev) => new Set([...prev, selectedJob.id.toString()]),
+            )
+          }
         />
       )}
     </div>

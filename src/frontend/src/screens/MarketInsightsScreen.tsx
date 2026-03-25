@@ -1,6 +1,9 @@
-import { Building2, Wifi, X } from "lucide-react";
+import { Building2, TrendingUp, Wifi } from "lucide-react";
+import { X } from "lucide-react";
 import { useState } from "react";
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
@@ -51,6 +54,34 @@ const skillsData = [
   { skill: "AWS/GCP", demand: 83 },
   { skill: "Node.js", demand: 76 },
   { skill: "Figma", demand: 70 },
+];
+
+const trendingRoles = [
+  { role: "AI/ML Engineer", openings: 12400, growth: "+68%", color: "#7C3AED" },
+  { role: "Data Engineer", openings: 9800, growth: "+52%", color: "#2563EB" },
+  { role: "Cloud Architect", openings: 7600, growth: "+44%", color: "#0ea5e9" },
+  { role: "Product Manager", openings: 6900, growth: "+38%", color: "#f59e0b" },
+  { role: "Full Stack Dev", openings: 15200, growth: "+35%", color: "#10b981" },
+  { role: "DevOps Engineer", openings: 8100, growth: "+33%", color: "#ef4444" },
+  { role: "Cybersecurity", openings: 5400, growth: "+41%", color: "#f97316" },
+  { role: "UX Designer", openings: 4200, growth: "+29%", color: "#ec4899" },
+];
+
+const salaryHikeData = [
+  { year: "2021", avg: 8 },
+  { year: "2022", avg: 14 },
+  { year: "2023", avg: 10 },
+  { year: "2024", avg: 12 },
+  { year: "2025", avg: 16 },
+];
+
+const salaryHikeByRole = [
+  { role: "AI/ML", hike: 28 },
+  { role: "Cloud", hike: 22 },
+  { role: "Fintech", hike: 20 },
+  { role: "Full Stack", hike: 17 },
+  { role: "UX/Product", hike: 15 },
+  { role: "QA/Test", hike: 10 },
 ];
 
 const hiringCompanies = [
@@ -307,6 +338,8 @@ const remoteTypeBadgeColor = (type: string) => {
 const growthGradientId = "growthGradient";
 const skillsGradientId = "skillsGradient";
 const salaryLineGradientId = "salaryLineGradient";
+const hikeAreaGradientId = "hikeAreaGradient";
+const hikeBarGradientId = "hikeBarGradient";
 
 function SectionCard({ children }: { children: React.ReactNode }) {
   return (
@@ -356,16 +389,28 @@ const SalaryTooltip = ({
   active,
   payload,
   label,
-}: {
-  active?: boolean;
-  payload?: { value: number }[];
-  label?: string;
-}) => {
+}: { active?: boolean; payload?: { value: number }[]; label?: string }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white rounded-xl px-3 py-2 shadow-lg border border-gray-100">
         <p className="text-xs text-gray-500">{label}</p>
         <p className="text-sm font-bold text-gray-900">{`\u20B9${payload[0].value} LPA`}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const HikeTooltip = ({
+  active,
+  payload,
+  label,
+}: { active?: boolean; payload?: { value: number }[]; label?: string }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white rounded-xl px-3 py-2 shadow-lg border border-gray-100">
+        <p className="text-xs text-gray-500">{label}</p>
+        <p className="text-sm font-bold text-gray-900">{`+${payload[0].value}% avg hike`}</p>
       </div>
     );
   }
@@ -393,7 +438,6 @@ function ModalSheet({
       className="fixed inset-0 z-50 flex flex-col justify-end"
       style={{ background: "rgba(0,0,0,0.5)" }}
     >
-      {/* Backdrop button */}
       <button
         type="button"
         aria-label="Close modal"
@@ -691,7 +735,190 @@ export default function MarketInsightsScreen() {
           </ResponsiveContainer>
         </SectionCard>
 
-        {/* Section 5: Top Hiring Companies */}
+        {/* Section 5: Trending Roles */}
+        <SectionCard>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="text-base font-bold text-gray-900">
+                Trending Roles
+              </h3>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Fastest-growing job titles in India (2025)
+              </p>
+            </div>
+            <TrendingUp size={18} className="text-purple-500" />
+          </div>
+          <div className="flex flex-col gap-2">
+            {trendingRoles.map((item, i) => (
+              <div key={item.role} className="flex items-center gap-3">
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-white font-bold"
+                  style={{
+                    background: item.color,
+                    fontSize: 10,
+                    flexShrink: 0,
+                  }}
+                >
+                  {i + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold text-gray-800">
+                      {item.role}
+                    </span>
+                    <span
+                      className="text-xs font-bold"
+                      style={{ color: item.color }}
+                    >
+                      {item.growth}
+                    </span>
+                  </div>
+                  <div
+                    className="w-full h-1.5 rounded-full"
+                    style={{ background: "#f3f4f6" }}
+                  >
+                    <div
+                      className="h-1.5 rounded-full"
+                      style={{
+                        background: item.color,
+                        width: `${Math.min(100, (item.openings / 16000) * 100)}%`,
+                        transition: "width 0.6s ease",
+                      }}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-400 mt-0.5 block">
+                    {item.openings.toLocaleString()} openings
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+
+        {/* Section 6: Salary Hike Trends */}
+        <SectionCard>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="text-base font-bold text-gray-900">
+                Salary Hike Trends
+              </h3>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Average annual hike % across industries
+              </p>
+            </div>
+            <TrendingUp size={18} className="text-blue-500" />
+          </div>
+          {/* Area chart: hike over years */}
+          <p className="text-xs text-gray-500 font-medium mb-1">
+            Industry Average Hike (2021 - 2025)
+          </p>
+          <ResponsiveContainer width="100%" height={160}>
+            <AreaChart
+              data={salaryHikeData}
+              margin={{ top: 8, right: 12, left: -16, bottom: 0 }}
+            >
+              <defs>
+                <linearGradient
+                  id={hikeAreaGradientId}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor="#2563EB" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="#2563EB" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis
+                dataKey="year"
+                tick={{ fontSize: 11, fill: "#6b7280" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tickFormatter={(v) => `${v}%`}
+                tick={{ fontSize: 10, fill: "#9ca3af" }}
+                axisLine={false}
+                tickLine={false}
+                domain={[0, 20]}
+              />
+              <Tooltip content={<HikeTooltip />} />
+              <Area
+                type="monotone"
+                dataKey="avg"
+                stroke="#2563EB"
+                strokeWidth={2.5}
+                fill={`url(#${hikeAreaGradientId})`}
+                dot={{ fill: "#2563EB", r: 4, stroke: "#fff", strokeWidth: 2 }}
+                activeDot={{ r: 6, fill: "#7C3AED" }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+
+          {/* Bar chart: hike by role */}
+          <p className="text-xs text-gray-500 font-medium mt-4 mb-1">
+            Hike by Role Category (2025)
+          </p>
+          <ResponsiveContainer width="100%" height={160}>
+            <BarChart
+              data={salaryHikeByRole}
+              margin={{ top: 4, right: 8, left: -16, bottom: 0 }}
+            >
+              <defs>
+                <linearGradient
+                  id={hikeBarGradientId}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor="#7C3AED" />
+                  <stop offset="100%" stopColor="#2563EB" />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="#f0f0f0"
+              />
+              <XAxis
+                dataKey="role"
+                tick={{ fontSize: 9, fill: "#6b7280" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tickFormatter={(v) => `${v}%`}
+                tick={{ fontSize: 9, fill: "#9ca3af" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip
+                formatter={(value: number) => [`+${value}%`, "Avg Hike"]}
+                contentStyle={{
+                  borderRadius: 12,
+                  border: "none",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                }}
+              />
+              <Bar
+                dataKey="hike"
+                fill={`url(#${hikeBarGradientId})`}
+                radius={[6, 6, 0, 0]}
+                barSize={26}
+                label={{
+                  position: "top",
+                  formatter: (v: number) => `+${v}%`,
+                  fontSize: 10,
+                  fill: "#7C3AED",
+                }}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </SectionCard>
+
+        {/* Section 7: Top Hiring Companies */}
         <SectionCard>
           <div className="flex items-center justify-between mb-3">
             <div>
@@ -748,7 +975,7 @@ export default function MarketInsightsScreen() {
           </button>
         </SectionCard>
 
-        {/* Section 6: Remote Opportunities */}
+        {/* Section 8: Remote Opportunities */}
         <SectionCard>
           <div className="flex items-center justify-between mb-3">
             <div>

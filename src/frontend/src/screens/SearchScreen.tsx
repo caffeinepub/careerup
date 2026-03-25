@@ -6,6 +6,7 @@ import { MOCK_JOBS, type MockJob } from "../data/mockJobs";
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState<MockJob | null>(null);
+  const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set());
 
   const filtered = MOCK_JOBS.filter((job) => {
     const q = query.toLowerCase();
@@ -89,10 +90,10 @@ export default function SearchScreen() {
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-gray-900 text-sm">{job.title}</p>
               <p className="text-xs text-gray-500">
-                {job.company} · {job.location}
+                {job.company} \u00b7 {job.location}
               </p>
               <p className="text-xs text-gray-400 mt-0.5">
-                ${(job.salaryMin / 1000).toFixed(0)}k – $
+                ${(job.salaryMin / 1000).toFixed(0)}k \u2013 $
                 {(job.salaryMax / 1000).toFixed(0)}k
               </p>
             </div>
@@ -112,6 +113,12 @@ export default function SearchScreen() {
         <JobDetailsSheet
           job={selectedJob}
           onClose={() => setSelectedJob(null)}
+          applied={appliedJobIds.has(selectedJob.id.toString())}
+          onApply={() =>
+            setAppliedJobIds(
+              (prev) => new Set([...prev, selectedJob.id.toString()]),
+            )
+          }
         />
       )}
     </div>
