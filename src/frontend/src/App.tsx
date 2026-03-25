@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import { useState } from "react";
+import { ApplicationsContextProvider } from "./context/ApplicationsContext";
 import { CONVERSATIONS } from "./data/mockData";
 import Applications from "./pages/Applications";
 import Dashboard from "./pages/Dashboard";
@@ -23,6 +24,10 @@ import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import AdminApp from "./pages/admin/AdminApp";
 import AdminLoginScreen from "./pages/admin/AdminLoginScreen";
+import MobileDashboard from "./screens/Dashboard";
+import OnboardingScreen from "./screens/OnboardingScreen";
+import SplashScreen from "./screens/SplashScreen";
+import WelcomeScreen from "./screens/WelcomeScreen";
 
 export type Page =
   | "dashboard"
@@ -44,6 +49,37 @@ const NAV_ITEMS: { id: Page; label: string; icon: React.ReactNode }[] = [
   { id: "profile", label: "Profile", icon: <User size={18} /> },
   { id: "settings", label: "Settings", icon: <Settings size={18} /> },
 ];
+
+// ─── Mobile App ───────────────────────────────────────────────────────────────
+
+type MobileStep = "splash" | "welcome" | "onboarding" | "dashboard";
+
+function MobileApp() {
+  const [step, setStep] = useState<MobileStep>("splash");
+
+  return (
+    <ApplicationsContextProvider>
+      <div className="fixed inset-0" style={{ background: "#f8f9fb" }}>
+        {step === "splash" && (
+          <SplashScreen onDone={() => setStep("welcome")} />
+        )}
+        {step === "welcome" && (
+          <WelcomeScreen
+            onCreateAccount={() => setStep("onboarding")}
+            onLogin={() => setStep("dashboard")}
+          />
+        )}
+        {step === "onboarding" && (
+          <OnboardingScreen onComplete={() => setStep("dashboard")} />
+        )}
+        {step === "dashboard" && <MobileDashboard />}
+      </div>
+      <Toaster />
+    </ApplicationsContextProvider>
+  );
+}
+
+// ─── Admin Entry Point ────────────────────────────────────────────────────────
 
 function AdminEntryPoint({
   onSwitchToRecruiter,
@@ -69,6 +105,8 @@ function AdminEntryPoint({
     </>
   );
 }
+
+// ─── Recruiter Entry Point ────────────────────────────────────────────────────
 
 function RecruiterEntryPoint({
   onSwitchToAdmin,
@@ -243,10 +281,19 @@ function RecruiterEntryPoint({
   );
 }
 
+// ─── Root Router ──────────────────────────────────────────────────────────────
+
+type AppMode = "mobile" | "recruiter" | "admin";
+
+function getInitialMode(): AppMode {
+  const hash = window.location.hash;
+  if (hash === "#admin") return "admin";
+  if (hash === "#recruiter") return "recruiter";
+  return "mobile";
+}
+
 export default function App() {
-  const [appMode, setAppMode] = useState<"recruiter" | "admin">(
-    window.location.hash === "#admin" ? "admin" : "recruiter",
-  );
+  const [appMode, setAppMode] = useState<AppMode>(getInitialMode);
 
   const switchToAdmin = () => {
     window.location.hash = "#admin";
@@ -254,12 +301,15 @@ export default function App() {
   };
 
   const switchToRecruiter = () => {
-    window.location.hash = "";
+    window.location.hash = "#recruiter";
     setAppMode("recruiter");
   };
 
   if (appMode === "admin") {
     return <AdminEntryPoint onSwitchToRecruiter={switchToRecruiter} />;
   }
-  return <RecruiterEntryPoint onSwitchToAdmin={switchToAdmin} />;
+  if (appMode === "recruiter") {
+    return <RecruiterEntryPoint onSwitchToAdmin={switchToAdmin} />;
+  }
+  return <MobileApp />;
 }

@@ -1,6 +1,15 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Briefcase, Eye, EyeOff, Lock, Mail, Users, Zap } from "lucide-react";
+import {
+  Briefcase,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  Smartphone,
+  Users,
+  Zap,
+} from "lucide-react";
 import { useState } from "react";
 
 interface LoginScreenProps {
@@ -30,6 +39,11 @@ export default function LoginScreen({
       setIsLoading(false);
       onLogin();
     }, 800);
+  };
+
+  const handleSwitchToMobile = () => {
+    window.location.hash = "";
+    window.location.reload();
   };
 
   const features = [
@@ -235,7 +249,7 @@ export default function LoginScreen({
             </span>
           </p>
 
-          <div className="flex justify-center mt-6">
+          <div className="flex flex-col items-center gap-2 mt-6">
             <button
               type="button"
               onClick={onSwitchToAdmin}
@@ -243,6 +257,14 @@ export default function LoginScreen({
               className="text-xs text-gray-400 hover:text-indigo-500 transition"
             >
               Admin Panel →
+            </button>
+            <button
+              type="button"
+              onClick={handleSwitchToMobile}
+              data-ocid="login.mobile_app.link"
+              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-indigo-500 transition"
+            >
+              <Smartphone size={12} />← Job Seeker App
             </button>
           </div>
         </div>
